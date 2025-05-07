@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:i_wish/presentation/auth/auth_page.dart';
 import 'package:i_wish/presentation/home/home_page.dart';
 
 class MyApp extends StatelessWidget {
@@ -13,8 +14,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         brightness: Brightness.light,
         textTheme: GoogleFonts.aBeeZeeTextTheme(),
+        scaffoldBackgroundColor: Colors.blue,
       ),
-      home: const HomePage(),
+      home: const AuthPage(),
     );
   }
 }
