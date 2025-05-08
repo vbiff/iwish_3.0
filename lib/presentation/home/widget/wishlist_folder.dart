@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:i_wish/domain/models/wishlist_item.dart';
+import 'package:i_wish/presentation/provider/items_provider.dart';
 import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
 
 import '../../../domain/models/wishlists.dart';
 
-class WishlistFolder extends StatelessWidget {
+class WishlistFolder extends ConsumerWidget {
   const WishlistFolder({
     super.key,
     required this.id,
@@ -15,12 +18,18 @@ class WishlistFolder extends StatelessWidget {
   final Wishlist wishlist;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(wishItemProvider);
+    final List<WishlistItem> currentWishlist =
+        items.where((w) => wishlist.id == w.wishlistId).toList();
     return InkWell(
       onTap: () => {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => WishlistPage(wishlist: wishlist),
+            builder: (context) => WishlistPage(
+              wishlist: currentWishlist,
+              title: wishlist.title,
+            ),
           ),
         )
       },

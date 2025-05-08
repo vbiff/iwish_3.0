@@ -1,5 +1,6 @@
 class WishlistItem {
   final String id;
+  final String wishlistId;
   final String title;
   final String? description;
   final String? imageUrl;
@@ -7,6 +8,7 @@ class WishlistItem {
 
   WishlistItem({
     required this.id,
+    required this.wishlistId,
     required this.title,
     this.description,
     this.imageUrl,

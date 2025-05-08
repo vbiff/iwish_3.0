@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:i_wish/data/dummy/list_wishlists.dart';
-
-import 'package:i_wish/domain/models/wishlists.dart';
 import 'package:i_wish/presentation/item/item_page.dart';
 
 import '../../domain/models/wishlist_item.dart';
@@ -10,16 +7,16 @@ class WishlistPage extends StatelessWidget {
   const WishlistPage({
     super.key,
     required this.wishlist,
+    this.title,
   });
 
-  final Wishlist wishlist;
+  final List<WishlistItem> wishlist;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
-    final List<WishlistItem> currentWishlist =
-        wishlistItems.where((w) => wishlist.id == w.id).toList();
     Widget content = ListView.separated(
-      itemCount: currentWishlist.length,
+      itemCount: wishlist.length,
       separatorBuilder: (BuildContext context, int index) {
         return Divider();
       },
@@ -29,38 +26,37 @@ class WishlistPage extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => ItemPage(
-                  item: wishlistItems
-                      .where((w) => wishlist.id == w.id)
-                      .toList()[index],
+                  item: wishlist[index],
                 ),
               ),
             );
           },
-          title: Text(wishlistItems
-              .where((w) => wishlist.id == w.id)
-              .toList()[index]
-              .title),
+          title: Text(wishlist[index].title),
         );
       },
     );
 
-    if (currentWishlist.isEmpty) {
+    if (wishlist.isEmpty) {
       content = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('There are no wishes so far'),
             Text(
-              'Make you wish!',
+              'Make your wish!',
               style: Theme.of(context).textTheme.headlineLarge,
             ),
           ],
         ),
       );
     }
+
+    if (title == null) {
+      return content;
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(wishlist.title),
+        title: Text(title!),
       ),
       body: content,
     );
