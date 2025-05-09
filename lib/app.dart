@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:i_wish/presentation/home/home_page.dart';
+import 'package:i_wish/presentation/auth/authentication/auth_gate.dart';
+import 'package:i_wish/presentation/home/tabs.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,8 +14,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         brightness: Brightness.light,
         textTheme: GoogleFonts.aBeeZeeTextTheme(),
+        scaffoldBackgroundColor: Colors.blue[50],
       ),
-      home: const HomePage(),
+      home: const AuthGate(),
     );
   }
 }

@@ -1,66 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:i_wish/data/dummy/list_wishlists.dart';
-
-import 'package:i_wish/domain/models/wishlists.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:i_wish/presentation/home_provider/wish_item_provider.dart';
 import 'package:i_wish/presentation/item/item_page.dart';
 
 import '../../domain/models/wishlist_item.dart';
+import '../home_provider/items_provider.dart';
 
-class WishlistPage extends StatelessWidget {
+class WishlistPage extends ConsumerWidget {
   const WishlistPage({
     super.key,
     required this.wishlist,
+    this.title,
   });
 
-  final Wishlist wishlist;
+  final List<WishlistItem> wishlist;
+  final String? title;
 
   @override
-  Widget build(BuildContext context) {
-    final List<WishlistItem> currentWishlist =
-        wishlistItems.where((w) => wishlist.id == w.id).toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final itemProvider = ref.read(wishItemProvider.notifier);
+    final listNotifier = ref.read(itemListProvider.notifier);
+    final currentItems = ref.watch(itemListProvider);
+
     Widget content = ListView.separated(
-      itemCount: currentWishlist.length,
+      itemCount: currentItems.length,
       separatorBuilder: (BuildContext context, int index) {
         return Divider();
       },
       itemBuilder: (BuildContext context, int index) {
-        return ListTile(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ItemPage(
-                  item: wishlistItems
-                      .where((w) => wishlist.id == w.id)
-                      .toList()[index],
+        return Slidable(
+          endActionPane: ActionPane(motion: BehindMotion(), children: [
+            SlidableAction(
+              onPressed: (context) async {
+                await itemProvider.deleteItem(currentItems[index].id!);
+                await listNotifier.getItems();
+              },
+              backgroundColor: Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Delete',
+            ),
+          ]),
+          child: ListTile(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ItemPage(
+                    item: currentItems[index],
+                  ),
                 ),
-              ),
-            );
-          },
-          title: Text(wishlistItems
-              .where((w) => wishlist.id == w.id)
-              .toList()[index]
-              .title),
+              );
+            },
+            title: Text(currentItems[index].title),
+          ),
         );
       },
     );
 
-    if (currentWishlist.isEmpty) {
+    if (currentItems.isEmpty) {
       content = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('There are no wishes so far'),
             Text(
-              'Make you wish!',
+              'Make your wish!',
               style: Theme.of(context).textTheme.headlineLarge,
             ),
           ],
         ),
       );
     }
+
+    if (title == null) {
+      return content;
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(wishlist.title),
+        title: Text(title!),
       ),
       body: content,
     );
