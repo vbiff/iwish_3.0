@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:i_wish/domain/models/wishlist_item.dart';
-import 'package:i_wish/presentation/provider/favorites_provider.dart';
+import 'package:i_wish/presentation/home_provider/favorites_provider.dart';
 
 class ItemPage extends ConsumerWidget {
   const ItemPage({

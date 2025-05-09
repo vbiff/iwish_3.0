@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:i_wish/presentation/home/home_page.dart';
-import 'package:i_wish/presentation/provider/favorites_provider.dart';
+import 'package:i_wish/presentation/home/widget/name_screen.dart';
+import 'package:i_wish/presentation/home_provider/favorites_provider.dart';
+import 'package:i_wish/presentation/home_provider/items_provider.dart';
 import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/widgets/draggable_bottom_sheet.dart';
 
 class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
@@ -47,7 +51,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
                 );
               },
               icon: Icon(
-                Icons.face,
+                Icons.person,
               )),
         ),
         title: Text(activePageTitle),
@@ -61,7 +65,28 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Favorites'),
         ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () {}),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text('Make a wish'),
+        onPressed: () {
+          showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            showDragHandle: true,
+            useSafeArea: true,
+            builder: (BuildContext context) {
+              return DraggableBottomSheet(
+                child: NameScreen(
+                  onPressed: () {
+                    ref.read(itemListProvider.notifier).getItems();
+                    Navigator.pop(context);
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

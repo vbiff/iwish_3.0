@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:i_wish/domain/models/wishlist_item.dart';
-import 'package:i_wish/presentation/provider/items_provider.dart';
+import 'package:i_wish/presentation/home_provider/items_provider.dart';
 import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
 
 import '../../../domain/models/wishlists.dart';
@@ -19,7 +19,7 @@ class WishlistFolder extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(wishItemProvider);
+    final items = ref.watch(itemListProvider);
     final List<WishlistItem> currentWishlist =
         items.where((w) => wishlist.id == w.wishlistId).toList();
     return InkWell(

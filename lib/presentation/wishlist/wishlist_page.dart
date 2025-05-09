@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:i_wish/presentation/home_provider/wish_item_provider.dart';
 import 'package:i_wish/presentation/item/item_page.dart';
 
 import '../../domain/models/wishlist_item.dart';
+import '../home_provider/items_provider.dart';
 
-class WishlistPage extends StatelessWidget {
+class WishlistPage extends ConsumerWidget {
   const WishlistPage({
     super.key,
     required this.wishlist,
@@ -14,29 +18,47 @@ class WishlistPage extends StatelessWidget {
   final String? title;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final itemProvider = ref.read(wishItemProvider.notifier);
+    final listNotifier = ref.read(itemListProvider.notifier);
+    final currentItems = ref.watch(itemListProvider);
+
     Widget content = ListView.separated(
-      itemCount: wishlist.length,
+      itemCount: currentItems.length,
       separatorBuilder: (BuildContext context, int index) {
         return Divider();
       },
       itemBuilder: (BuildContext context, int index) {
-        return ListTile(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ItemPage(
-                  item: wishlist[index],
+        return Slidable(
+          endActionPane: ActionPane(motion: BehindMotion(), children: [
+            SlidableAction(
+              onPressed: (context) async {
+                await itemProvider.deleteItem(currentItems[index].id!);
+                await listNotifier.getItems();
+              },
+              backgroundColor: Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Delete',
+            ),
+          ]),
+          child: ListTile(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ItemPage(
+                    item: currentItems[index],
+                  ),
                 ),
-              ),
-            );
-          },
-          title: Text(wishlist[index].title),
+              );
+            },
+            title: Text(currentItems[index].title),
+          ),
         );
       },
     );
 
-    if (wishlist.isEmpty) {
+    if (currentItems.isEmpty) {
       content = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
