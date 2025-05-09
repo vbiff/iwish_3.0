@@ -10,7 +10,7 @@ class UserAvatar extends StatelessWidget {
     return const Center(
       child: CircleAvatar(
         backgroundColor: Colors.grey,
-        backgroundImage: AssetImage('assets/photos/backgroundAvatar.jpeg'),
+        backgroundImage: AssetImage('assets/images/avatar_background.jpg'),
         radius: 100,
       ),
     );

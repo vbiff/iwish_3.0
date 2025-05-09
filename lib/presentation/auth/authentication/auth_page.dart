@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:i_wish/presentation/auth/widgets/login_tab_page.dart';
-import 'package:i_wish/presentation/auth/widgets/sign_up_tab_page.dart';
-import '../../../../core/ui/styles.dart';
+import 'package:i_wish/presentation/auth/authentication/widgets/login_tab_page.dart';
+import 'package:i_wish/presentation/auth/authentication/widgets/sign_up_tab_page.dart';
+import '../../../../../core/ui/styles.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});

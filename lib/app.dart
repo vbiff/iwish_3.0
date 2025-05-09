@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:i_wish/presentation/auth/auth_page.dart';
-import 'package:i_wish/presentation/home/home_page.dart';
+import 'package:i_wish/presentation/auth/authentication/auth_gate.dart';
 import 'package:i_wish/presentation/home/tabs.dart';
 
 class MyApp extends StatelessWidget {
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.aBeeZeeTextTheme(),
         scaffoldBackgroundColor: Colors.blue[50],
       ),
-      home: const TabsScreen(),
+      home: const AuthGate(),
     );
   }
 }

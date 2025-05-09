@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.6"
+  cupertino_container:
+    dependency: "direct main"
+    description:
+      name: cupertino_container
+      sha256: "28e9ec16263ef8c8466c6b84bb8994c0fd624dfde4b44dd19c58c1c7365ad482"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   cupertino_icons:
     dependency: "direct main"
     description:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:i_wish/presentation/home/home_page.dart';
 import 'package:i_wish/presentation/provider/favorites_provider.dart';
 import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
@@ -35,6 +36,20 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePage(),
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.face,
+              )),
+        ),
         title: Text(activePageTitle),
       ),
       body: activePage,

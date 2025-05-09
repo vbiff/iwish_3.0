@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/ui/styles.dart';
+import '../../../../../../core/ui/styles.dart';
 
 class GoogeAppleAuthButtons extends StatelessWidget {
   const GoogeAppleAuthButtons({

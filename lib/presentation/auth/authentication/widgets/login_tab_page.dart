@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:i_wish/presentation/auth/authentication/provider/auth_provider.dart';
 
-import '../../../../../core/ui/styles.dart';
+import '../../../../../../core/ui/styles.dart';
 
-import '../../../core/widgets/main_button.dart';
-import '../../../core/widgets/text_form_field.dart';
+import '../../../../core/widgets/main_button.dart';
+import '../../../../core/widgets/text_form_field.dart';
 import 'google_apple_auth_buttons.dart';
 
-class LogInTabPage extends StatelessWidget {
+class LogInTabPage extends ConsumerWidget {
   const LogInTabPage({
     super.key,
     required this.emailController,
@@ -19,7 +21,8 @@ class LogInTabPage extends StatelessWidget {
   final GlobalKey<FormState> _formKey;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.read(authProvider.notifier);
     return Column(
       spacing: AppStyles.paddingMain,
       children: [
@@ -59,7 +62,12 @@ class LogInTabPage extends StatelessWidget {
           color: AppStyles.yellow,
           title: 'Log in',
           onPressed: () {
-            if (_formKey.currentState!.validate()) {}
+            if (_formKey.currentState!.validate()) {
+              auth.loginUser(
+                email: emailController.text,
+                password: passwController.text,
+              );
+            }
           },
         )
       ],

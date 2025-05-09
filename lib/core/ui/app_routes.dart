@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../presentation/auth/auth_gate.dart';
+import '../../presentation/auth/authentication/auth_gate.dart';
 
 abstract class AppRoutes {
   static const authGate = 'authGate';
