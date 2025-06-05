@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:i_wish/presentation/auth/authentication/auth_gate.dart';
-import 'package:i_wish/presentation/home/tabs.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

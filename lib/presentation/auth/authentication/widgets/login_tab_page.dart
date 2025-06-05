@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/presentation/auth/authentication/provider/auth_provider.dart';
+import 'package:i_wish/presentation/auth/authentication/auth_provider/auth_provider.dart';
 
 import '../../../../../../core/ui/styles.dart';
 

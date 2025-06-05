@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/data/repository/wish_item_repository/wish_item_repository_impl.dart';
 
-import 'package:i_wish/domain/repository/wish_item/wish_item_repository.dart';
-
-import '../../domain/models/wishlist_item.dart';
+import '../../../domain/models/wishlist_item.dart';
+import '../../../domain/repository/wish_item/wish_item_repository.dart';
 
 class WishItemNotifier extends StateNotifier<WishlistItem> {
   WishItemNotifier(
@@ -30,13 +28,3 @@ class WishItemNotifier extends StateNotifier<WishlistItem> {
     }
   }
 }
-
-final itemRepositoryProvider = Provider<WishItemRepository>((ref) {
-  return WishItemRepositoryImpl();
-});
-
-final wishItemProvider =
-    StateNotifierProvider<WishItemNotifier, WishlistItem>((ref) {
-  final itemRepoProvider = ref.read(itemRepositoryProvider);
-  return WishItemNotifier(itemRepoProvider);
-});
