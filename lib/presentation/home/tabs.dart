@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:i_wish/presentation/home/home_page.dart';
 import 'package:i_wish/presentation/home/widget/name_screen.dart';
-import 'package:i_wish/presentation/home_provider/favorites_provider.dart';
-import 'package:i_wish/presentation/home_provider/items_provider.dart';
+import 'package:i_wish/presentation/item/favorites/favorites_provider.dart';
+import 'package:i_wish/presentation/home/items/items_provider.dart';
 import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

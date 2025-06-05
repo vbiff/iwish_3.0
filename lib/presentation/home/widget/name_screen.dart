@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/presentation/home_provider/wish_item_provider.dart';
+import 'package:i_wish/presentation/wishlist/wish_item/wish_item_provider.dart';
 import '../../../core/ui/styles.dart';
 import '../../../core/widgets/text_form_field.dart';
 import '../../../domain/models/wishlist_item.dart';

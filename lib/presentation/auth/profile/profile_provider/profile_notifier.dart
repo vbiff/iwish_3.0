@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/data/repository/auth/profile_repository_impl.dart';
-import 'package:i_wish/domain/models/auth/user_profile.dart';
-import 'package:i_wish/domain/repository/auth/profile_repository.dart';
+
+import '../../../../domain/models/auth/user_profile.dart';
+import '../../../../domain/repository/auth/profile_repository.dart';
 
 class ProfileNotifier extends StateNotifier<UserProfile> {
   ProfileNotifier(this._authRepository) : super(UserProfile(id: '', email: ''));
@@ -32,13 +32,3 @@ class ProfileNotifier extends StateNotifier<UserProfile> {
     }
   }
 }
-
-final _authRepositotyProv = Provider<ProfileScreenRepository>((ref) {
-  return ProfileScreenRepositoryImpl();
-});
-
-final profileProvider =
-    StateNotifierProvider<ProfileNotifier, UserProfile>((ref) {
-  final authRepositoryProvider = ref.read(_authRepositotyProv);
-  return ProfileNotifier(authRepositoryProvider);
-});

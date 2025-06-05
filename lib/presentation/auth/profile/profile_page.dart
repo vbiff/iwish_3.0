@@ -2,7 +2,7 @@ import 'package:cupertino_container/cupertino_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i_wish/presentation/auth/authentication/auth_gate.dart';
-import 'package:i_wish/presentation/auth/profile/profile_provider.dart';
+import 'package:i_wish/presentation/auth/profile/profile_provider/profile_provider.dart';
 import '../../../../core/ui/styles.dart';
 import '../../../core/widgets/user_avatar.dart';
 

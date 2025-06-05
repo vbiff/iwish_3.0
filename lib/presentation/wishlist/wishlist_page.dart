@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:i_wish/presentation/home_provider/wish_item_provider.dart';
+import 'package:i_wish/presentation/wishlist/wish_item/wish_item_provider.dart';
 import 'package:i_wish/presentation/item/item_page.dart';
 
 import '../../domain/models/wishlist_item.dart';
-import '../home_provider/items_provider.dart';
+import '../home/items/items_provider.dart';
 
 class WishlistPage extends ConsumerWidget {
   const WishlistPage({

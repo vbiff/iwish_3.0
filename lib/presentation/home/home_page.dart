@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i_wish/data/dummy/list_wishlists.dart';
 import 'package:i_wish/presentation/home/widget/wishlist_folder.dart';
 
-import '../home_provider/items_provider.dart';
+import 'items/items_provider.dart';
 import '../wishlist/wishlist_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {

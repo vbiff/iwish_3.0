@@ -1,5 +1,3 @@
-import 'package:flutter/widgets.dart';
-
 class UserProfile {
   const UserProfile({
     required this.id,
