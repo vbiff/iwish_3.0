@@ -497,6 +497,9 @@ class HomePage extends ConsumerWidget {
                       .read(wishlistsProvider.notifier)
                       .deleteWishlist(wishlist.id);
 
+                  // Refresh items to remove deleted wishlist items from "All Wishes"
+                  ref.invalidate(itemsProvider);
+
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

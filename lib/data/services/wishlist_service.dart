@@ -52,6 +52,10 @@ class WishlistService {
 
   Future<Result<void, Failure>> deleteWishlist(String id) async {
     try {
+      // First delete all items associated with this wishlist
+      await _supabase.from('item').delete().eq('wishlist_id', id);
+
+      // Then delete the wishlist itself
       await _supabase.from('wishlist').delete().eq('id', id);
       return Success(null);
     } on PostgrestException catch (e) {
