@@ -15,16 +15,16 @@ abstract class _$AppRouter extends RootStackRouter {
 
   @override
   final Map<String, PageFactory> pagesMap = {
+    AuthGateRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const AuthGatePage(),
+      );
+    },
     AuthRouteRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const AuthPageRoute(),
-      );
-    },
-    AuthWrapperRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const AuthWrapperPage(),
       );
     },
     ItemRouteRoute.name: (routeData) {
@@ -76,6 +76,20 @@ abstract class _$AppRouter extends RootStackRouter {
 }
 
 /// generated route for
+/// [AuthGatePage]
+class AuthGateRoute extends PageRouteInfo<void> {
+  const AuthGateRoute({List<PageRouteInfo>? children})
+      : super(
+          AuthGateRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AuthGateRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [AuthPageRoute]
 class AuthRouteRoute extends PageRouteInfo<void> {
   const AuthRouteRoute({List<PageRouteInfo>? children})
@@ -85,20 +99,6 @@ class AuthRouteRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AuthRouteRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [AuthWrapperPage]
-class AuthWrapperRoute extends PageRouteInfo<void> {
-  const AuthWrapperRoute({List<PageRouteInfo>? children})
-      : super(
-          AuthWrapperRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'AuthWrapperRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

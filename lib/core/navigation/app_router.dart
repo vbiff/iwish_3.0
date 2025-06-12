@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/models/wishlist_item.dart';
 import '../../domain/models/wishlists.dart';
+import '../../presentation/auth/authentication/auth_gate.dart';
 import '../../presentation/auth/authentication/auth_page.dart';
 import '../../presentation/auth/profile/profile_page.dart';
 import '../../presentation/home/tabs.dart';
@@ -17,9 +17,9 @@ part 'app_router.gr.dart';
 class AppRouter extends _$AppRouter {
   @override
   List<AutoRoute> get routes => [
-        // Auth Guard Wrapper
+        // Auth Gate
         AutoRoute(
-          page: AuthWrapperRoute.page,
+          page: AuthGateRoute.page,
           path: '/',
           initial: true,
         ),
@@ -52,60 +52,13 @@ class AppRouter extends _$AppRouter {
       ];
 }
 
-// Auth Wrapper to handle authentication state
+// Auth Gate Route
 @RoutePage()
-class AuthWrapperPage extends StatelessWidget {
-  const AuthWrapperPage({super.key});
+class AuthGatePage extends StatelessWidget {
+  const AuthGatePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // First check current session state
-    final currentSession = Supabase.instance.client.auth.currentSession;
-
-    return StreamBuilder(
-      stream: Supabase.instance.client.auth.onAuthStateChange,
-      initialData: currentSession != null
-          ? AuthState(AuthChangeEvent.signedIn, currentSession)
-          : AuthState(AuthChangeEvent.signedOut, null),
-      builder: (context, snapshot) {
-        // Loading state only if we're truly waiting and have no initial data
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator.adaptive(),
-            ),
-          );
-        }
-
-        // Check if there is valid session
-        final session =
-            snapshot.hasData ? snapshot.data!.session : currentSession;
-
-        if (session != null) {
-          // User is authenticated, redirect to home
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.router.current.name != TabsRoute.name) {
-              context.router.replaceAll([const TabsRoute()]);
-            }
-          });
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        } else {
-          // User is not authenticated, redirect to auth
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.router.current.name != AuthRouteRoute.name) {
-              context.router.replaceAll([const AuthRouteRoute()]);
-            }
-          });
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-      },
-    );
-  }
+  Widget build(BuildContext context) => const AuthGate();
 }
 
 // Route Pages

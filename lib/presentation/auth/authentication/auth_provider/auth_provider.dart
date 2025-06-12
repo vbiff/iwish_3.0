@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i_wish/data/repository/auth_repository/auth_repository_impl.dart';
-import 'package:i_wish/domain/models/auth/user_profile.dart';
 import 'package:i_wish/domain/repository/auth_repository/auth_repository.dart';
 
 import '../../../../data/services/auth/auth_service.dart';
@@ -14,7 +13,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(authService: ref.read(authServiceProvider));
 });
 
-final authProvider = StateNotifierProvider<AuthNotifier, UserProfile>((ref) {
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.read(authRepositoryProvider);
   return AuthNotifier(repository);
 });
