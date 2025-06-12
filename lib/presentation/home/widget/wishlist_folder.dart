@@ -79,7 +79,7 @@ class WishlistFolder extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.favorite_rounded,
                           color: Colors.white,
                           size: 20,
@@ -108,13 +108,14 @@ class WishlistFolder extends ConsumerWidget {
                     ],
                   ),
 
+                  // Spacer that takes available space
                   const Spacer(),
 
-                  // Title
+                  // Title and subtitle at the bottom
                   Text(
                     wishlist.title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                     maxLines: 2,
@@ -128,12 +129,14 @@ class WishlistFolder extends ConsumerWidget {
                     currentWishlist.isEmpty
                         ? 'No items yet'
                         : '${currentWishlist.length} ${currentWishlist.length == 1 ? 'item' : 'items'}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
                               .withValues(alpha: 0.6),
                         ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

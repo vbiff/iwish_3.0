@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../domain/models/auth/user_profile.dart';
 
 final class ProfileService {
@@ -38,9 +39,9 @@ final class ProfileService {
     try {
       final response =
           await _supabase.storage.from('avatars').upload(fileName, file);
-      print('Upload response: $response');
+      AppLogger.info('Upload response: $response');
     } catch (e) {
-      print('Upload error: $e');
+      AppLogger.error('Upload error: $e');
       throw Exception('Failed to upload image: $e');
     }
 
@@ -48,7 +49,7 @@ final class ProfileService {
     final publicUrl = _supabase.storage.from('avatars').getPublicUrl(fileName);
 
     // Update user metadata with avatar URL
-    final updateResult = await _supabase.auth.updateUser(
+    await _supabase.auth.updateUser(
       UserAttributes(
         data: {'avatar_url': publicUrl},
       ),

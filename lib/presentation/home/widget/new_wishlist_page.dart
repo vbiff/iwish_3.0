@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/widgets/text_form_field.dart';
 import '../../../domain/models/wishlist_color.dart';
 import '../../../domain/models/wishlists.dart';
 import '../wishlist_provider/wishlist_provider.dart';

@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/utils/logger.dart';
 import '../../domain/core/result.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/models/wishlists.dart';
@@ -30,10 +31,10 @@ class WishlistService {
           .from('wishlist')
           .insert(WishlistModel.fromEntity(wishlist).toJson())
           .select();
-      print('Wishlist created successfully: $result');
+      AppLogger.info('Wishlist created successfully: $result');
       return Success(null);
     } on PostgrestException catch (e) {
-      print('Failed to create wishlist: ${e.message}');
+      AppLogger.error('Failed to create wishlist: ${e.message}');
       return Error(ServerFailure('Failed to create wishlist: ${e.message}'));
     }
   }

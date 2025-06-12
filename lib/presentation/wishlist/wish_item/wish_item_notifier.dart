@@ -20,6 +20,14 @@ class WishItemNotifier extends StateNotifier<WishlistItem> {
     );
   }
 
+  Future<void> updateItem(WishlistItem item) async {
+    final result = await _itemRepository.updateItem(item);
+    result.fold(
+      (_) => AppLogger.info('Item updated successfully: ${item.title}'),
+      (failure) => AppLogger.error('Failed to update item: ${failure.message}'),
+    );
+  }
+
   Future<void> deleteItem(String id) async {
     final result = await _itemRepository.deleteItem(id);
     result.fold(

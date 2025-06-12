@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:auto_route/auto_route.dart';
+
 import 'package:i_wish/presentation/home/home_page.dart';
 import 'package:i_wish/presentation/home/widget/name_screen.dart';
 import 'package:i_wish/presentation/home/items/items_provider.dart';
 import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../core/navigation/app_router.dart';
 
 class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
@@ -27,20 +25,16 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     Widget activePage;
-    String activePageTitle;
 
     switch (_selectedPageIndex) {
       case 0:
         activePage = const HomePage();
-        activePageTitle = 'My Wishes';
         break;
       case 1:
         activePage = const ProfilePage();
-        activePageTitle = 'Profile';
         break;
       default:
         activePage = const HomePage();
-        activePageTitle = 'My Wishes';
     }
 
     return Scaffold(
