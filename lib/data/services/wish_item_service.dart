@@ -14,6 +14,7 @@ class WishItemService {
         'wishlist_id': item.wishlistId,
         'title': item.title,
         'link': item.url,
+        'price': item.price,
         'image_url': item.imageUrl,
         'comments': item.description
       });
@@ -44,6 +45,7 @@ class WishItemService {
                 wishlistId: item['wishlist_id']?.toString(),
                 title: item['title'] as String,
                 description: item['comments'] as String?,
+                price: item['price'] as String?,
                 imageUrl: item['image_url'] as String?,
                 url: item['link'] as String?,
               ))
@@ -69,6 +71,7 @@ class WishItemService {
         'wishlist_id': item.wishlistId,
         'title': item.title,
         'link': item.url,
+        'price': item.price,
         'image_url': item.imageUrl,
         'comments': item.description
       }).eq('id', item.id!);

@@ -13,9 +13,10 @@ import '../../domain/models/wishlist_item.dart';
 import '../../domain/models/wishlists.dart';
 import '../home/items/items_provider.dart';
 import '../home/wishlist_provider/wishlist_provider.dart';
+import '../home/widget/name_screen.dart';
 import 'wish_item/wish_item_provider.dart';
 
-class WishlistPage extends ConsumerWidget {
+class WishlistPage extends ConsumerStatefulWidget {
   const WishlistPage({
     super.key,
     required this.wishlist,
@@ -28,23 +29,68 @@ class WishlistPage extends ConsumerWidget {
   final Wishlist? wishlistObject;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WishlistPage> createState() => _WishlistPageState();
+}
+
+class _WishlistPageState extends ConsumerState<WishlistPage> {
+  List<WishlistItem> _localItems = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final itemsAsync = ref.read(itemsProvider);
+    if (itemsAsync.hasValue) {
+      _localItems = List.from(itemsAsync.value!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final itemProvider = ref.read(wishItemProvider.notifier);
     final itemsAsync = ref.watch(itemsProvider);
     final wishlistsAsync = ref.watch(wishlistsProvider);
 
+    // Update local items when the async data changes
+    if (itemsAsync.hasValue && _localItems.isEmpty) {
+      _localItems = List.from(itemsAsync.value!);
+    }
+
     // Get the current wishlist data from the provider for live updates
     Wishlist? currentWishlist;
-    if (wishlistObject != null && wishlistsAsync.value != null) {
+    if (widget.wishlistObject != null && wishlistsAsync.value != null) {
       try {
         currentWishlist = wishlistsAsync.value!.firstWhere(
-          (w) => w.id == wishlistObject!.id,
+          (w) => w.id == widget.wishlistObject!.id,
         );
       } catch (e) {
-        currentWishlist = wishlistObject;
+        currentWishlist = widget.wishlistObject;
       }
     } else {
-      currentWishlist = wishlistObject;
+      currentWishlist = widget.wishlistObject;
+    }
+
+    // Filter items based on current wishlist
+    final List<WishlistItem> filteredItems;
+    if (currentWishlist != null) {
+      // Use itemsAsync.value instead of _localItems for live updates
+      if (itemsAsync.hasValue) {
+        // If we have local items during reordering, use those instead
+        if (_localItems.isNotEmpty) {
+          filteredItems = _localItems
+              .where((item) => item.wishlistId == currentWishlist!.id)
+              .toList();
+        } else {
+          filteredItems = itemsAsync.value!
+              .where((item) => item.wishlistId == currentWishlist!.id)
+              .toList();
+          // Keep local items in sync when not reordering
+          _localItems = List.from(itemsAsync.value!);
+        }
+      } else {
+        filteredItems = [];
+      }
+    } else {
+      filteredItems = _localItems;
     }
 
     return Scaffold(
@@ -69,7 +115,7 @@ class WishlistPage extends ConsumerWidget {
           children: [
             // Custom App Bar
             _ModernAppBar(
-              title: currentWishlist?.title ?? title ?? 'Wishlist',
+              title: currentWishlist?.title ?? widget.title ?? 'Wishlist',
               onBack: () => context.router.maybePop(),
               onEdit: currentWishlist != null
                   ? () => context.router.push(NewWishlistRouteRoute(
@@ -104,55 +150,125 @@ class WishlistPage extends ConsumerWidget {
             Expanded(
               child: ModernRefreshIndicator(
                 onRefresh: () async {
+                  // Clear local items to force refresh from provider
+                  setState(() {
+                    _localItems.clear();
+                  });
                   ref.invalidate(itemsProvider);
                 },
                 child: AsyncValueWidget(
                   value: itemsAsync,
                   data: (allItems) {
-                    // Filter items based on wishlist
-                    final List<WishlistItem> filteredItems;
-                    if (currentWishlist != null) {
-                      // Show only items for this specific wishlist
-                      filteredItems = allItems
-                          .where(
-                              (item) => item.wishlistId == currentWishlist!.id)
-                          .toList();
-                    } else {
-                      // Show all items (for "All Wishes" page)
-                      filteredItems = allItems;
-                    }
-
                     if (filteredItems.isEmpty) {
                       return ModernEmptyWidget(
                         title: 'No wishes yet',
                         message:
-                            'Start adding items to your ${title?.toLowerCase() ?? 'wishlist'} to see them here',
+                            'Start adding items to your ${widget.title?.toLowerCase() ?? 'wishlist'} to see them here',
                         icon: Icons.auto_awesome_outlined,
-                        action: currentWishlist != null
-                            ? () => _showNewWishDialog(
-                                context, ref, currentWishlist!)
-                            : null,
-                        actionLabel: 'Add Your First Wish',
                       );
                     }
 
-                    return ListView.separated(
+                    return ReorderableListView.builder(
                       padding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacing2xl),
                       itemCount: filteredItems.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: AppTheme.spacingMd),
+                      buildDefaultDragHandles: false,
+                      onReorder: (int oldIndex, int newIndex) async {
+                        setState(() {
+                          if (oldIndex < newIndex) {
+                            newIndex -= 1;
+                          }
+                          final item = filteredItems.removeAt(oldIndex);
+                          filteredItems.insert(newIndex, item);
+
+                          // Update local items list to maintain order during reordering
+                          if (currentWishlist != null) {
+                            final allItemsOldIndex =
+                                _localItems.indexWhere((i) => i.id == item.id);
+                            if (allItemsOldIndex != -1) {
+                              _localItems.removeAt(allItemsOldIndex);
+                              // Find the correct position in _localItems
+                              final targetItem = filteredItems[
+                                  newIndex > 0 ? newIndex - 1 : 0];
+                              final targetIndex = _localItems
+                                  .indexWhere((i) => i.id == targetItem.id);
+                              _localItems.insert(targetIndex + 1, item);
+                            }
+                          }
+                        });
+
+                        // Update database in the background
+                        Future.microtask(() async {
+                          for (var i = 0; i < filteredItems.length; i++) {
+                            final currentItem = filteredItems[i];
+                            if (currentItem.id != null) {
+                              await itemProvider.updateItem(currentItem);
+                            }
+                          }
+                          // Don't invalidate provider here to prevent jumps
+                        });
+                      },
+                      proxyDecorator: (child, index, animation) {
+                        return AnimatedBuilder(
+                          animation: CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                          builder: (BuildContext context, Widget? child) {
+                            final scale = 1.0 + (0.02 * animation.value);
+                            final elevation = 6.0 * animation.value;
+
+                            return Transform.scale(
+                              scale: scale,
+                              child: Material(
+                                elevation: elevation,
+                                color: Colors.transparent,
+                                shadowColor: Theme.of(context)
+                                    .colorScheme
+                                    .shadow
+                                    .withValues(alpha: 0.15),
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radiusMd),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: child,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final item = filteredItems[index];
-                        return _WishItem(
-                          item: item,
-                          wishlist: currentWishlist,
-                          onDelete: () async {
-                            await itemProvider.deleteItem(item.id!);
-                            ref.invalidate(itemsProvider);
-                          },
-                          onTap: () =>
-                              context.router.push(ItemRouteRoute(item: item)),
+                        return ReorderableDelayedDragStartListener(
+                          key: ValueKey(item.id),
+                          index: index,
+                          child: Column(
+                            children: [
+                              _WishItem(
+                                item: item,
+                                wishlist: currentWishlist,
+                                onDelete: () async {
+                                  // Remove from local state first
+                                  setState(() {
+                                    _localItems
+                                        .removeWhere((i) => i.id == item.id);
+                                  });
+
+                                  // Then update database
+                                  await itemProvider.deleteItem(item.id!);
+                                  ref.invalidate(itemsProvider);
+                                },
+                                onTap: () => context.router
+                                    .push(ItemRouteRoute(item: item)),
+                              ),
+                              if (index < filteredItems.length - 1)
+                                Divider(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                                  height: 1,
+                                ),
+                            ],
+                          ),
                         );
                       },
                     );
@@ -168,10 +284,21 @@ class WishlistPage extends ConsumerWidget {
 
   void _showNewWishDialog(
       BuildContext context, WidgetRef ref, Wishlist wishlist) {
-    showDialog(
+    showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
+      showDragHandle: false,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return _NewWishDialog(wishlist: wishlist, ref: ref);
+        return NameScreen(
+          wishlist: wishlist,
+          onPressed: () {
+            // Just invalidate the provider and close the modal
+            ref.invalidate(itemsProvider);
+            context.router.maybePop();
+          },
+        );
       },
     );
   }
@@ -293,12 +420,12 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-class _WishItem extends StatelessWidget {
+class _WishItem extends ConsumerWidget {
   const _WishItem({
     required this.item,
+    required this.wishlist,
     required this.onDelete,
     required this.onTap,
-    this.wishlist,
   });
 
   final WishlistItem item;
@@ -307,79 +434,229 @@ class _WishItem extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishlistsAsync = ref.watch(wishlistsProvider);
+
+    // Get the color of the folder where this item is stored
+    Color itemColor = Theme.of(context).colorScheme.primary;
+    if (wishlistsAsync.hasValue && item.wishlistId != null) {
+      final itemWishlist = wishlistsAsync.value!.firstWhere(
+        (w) => w.id == item.wishlistId,
+        orElse: () =>
+            wishlist ??
+            Wishlist(
+              id: '',
+              userId: '',
+              title: '',
+              createdAt: DateTime.now(),
+            ),
+      );
+      itemColor = ColorMapper.toFlutterColor(itemWishlist.color);
+    }
+
     return Slidable(
       endActionPane: ActionPane(
-        motion: const BehindMotion(),
+        motion: const ScrollMotion(),
         children: [
           SlidableAction(
             onPressed: (_) => onDelete(),
             backgroundColor: Theme.of(context).colorScheme.error,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onError,
             icon: Icons.delete_rounded,
             label: 'Delete',
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
         ],
       ),
       child: ModernCard(
         onTap: onTap,
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: wishlist != null
-                    ? ColorMapper.toFlutterColor(wishlist!.color)
-                        .withValues(alpha: 0.1)
-                    : Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              ),
-              child: Icon(
-                Icons.card_giftcard_rounded,
-                color: wishlist != null
-                    ? ColorMapper.toFlutterColor(wishlist!.color)
-                    : Theme.of(context).colorScheme.primary,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: AppTheme.spacingLg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacingLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Text(
-                    item.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (item.description?.isNotEmpty == true) ...[
-                    const SizedBox(height: AppTheme.spacingXs),
-                    Text(
-                      item.description!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: itemColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                     ),
-                  ],
+                    child: Icon(
+                      Icons.card_giftcard_rounded,
+                      size: 18,
+                      color: itemColor,
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacingMd),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              _showMoveToFolderDialog(context, ref, item),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: itemColor.withValues(alpha: 0.1),
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                            ),
+                            child: Icon(
+                              Icons.edit_rounded,
+                              size: 16,
+                              color: itemColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
+              if (item.description != null && item.description!.isNotEmpty) ...[
+                const SizedBox(height: AppTheme.spacingMd),
+                Text(
+                  item.description!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMoveToFolderDialog(
+      BuildContext context, WidgetRef ref, WishlistItem item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _MoveToFolderDialog(item: item);
+      },
+    );
+  }
+}
+
+class _MoveToFolderDialog extends ConsumerWidget {
+  const _MoveToFolderDialog({
+    required this.item,
+  });
+
+  final WishlistItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishlistsAsync = ref.watch(wishlistsProvider);
+    final itemProvider = ref.read(wishItemProvider.notifier);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacing2xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Move to Folder',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              size: 16,
+            const SizedBox(height: AppTheme.spacingMd),
+            Text(
+              'Choose a folder to move this item to:',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+            ),
+            const SizedBox(height: AppTheme.spacingXl),
+            AsyncValueWidget(
+              value: wishlistsAsync,
+              data: (wishlists) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: wishlists.map((wishlist) {
+                  final isSelected = wishlist.id == item.wishlistId;
+                  return ModernCard(
+                    margin: const EdgeInsets.only(bottom: AppTheme.spacingMd),
+                    onTap: isSelected
+                        ? null
+                        : () async {
+                            final updatedItem = item.copyWith(
+                              wishlistId: wishlist.id,
+                            );
+                            await itemProvider.updateItem(updatedItem);
+                            ref.invalidate(itemsProvider);
+                            if (context.mounted) {
+                              context.router.maybePop();
+                            }
+                          },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: ColorMapper.toFlutterColor(wishlist.color)
+                                .withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusSm),
+                          ),
+                          child: Icon(
+                            Icons.folder_rounded,
+                            size: 20,
+                            color: ColorMapper.toFlutterColor(wishlist.color),
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingLg),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                wishlist.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: ColorMapper.toFlutterColor(wishlist.color),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingXl),
+            ModernButton.ghost(
+              onPressed: () => context.router.maybePop(),
+              child: const Text('Cancel'),
             ),
           ],
         ),
@@ -510,7 +787,7 @@ class _NewWishDialogState extends State<_NewWishDialog> {
       ),
       actions: [
         ModernButton.ghost(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).maybePop(),
           child: const Text('Cancel'),
         ),
         ModernButton.primary(
@@ -534,7 +811,7 @@ class _NewWishDialogState extends State<_NewWishDialog> {
                 widget.ref.invalidate(itemsProvider);
 
                 if (context.mounted) {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).maybePop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Wish added to ${widget.wishlist.title}!'),

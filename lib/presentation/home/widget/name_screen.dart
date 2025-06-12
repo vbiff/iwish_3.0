@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/presentation/wishlist/wish_item/wish_item_provider.dart';
 import '../../../domain/models/wishlist_item.dart';
+import '../../../domain/models/wishlists.dart';
+import '../../../core/utils/color_mapper.dart';
+import '../../wishlist/wish_item/wish_item_provider.dart';
+import '../items/items_provider.dart';
 
 class NameScreen extends ConsumerStatefulWidget {
   const NameScreen({
     super.key,
     required this.onPressed,
+    this.wishlist,
   });
 
   final VoidCallback onPressed;
+  final Wishlist? wishlist;
 
   @override
   ConsumerState<NameScreen> createState() => _NameScreenState();
@@ -34,8 +39,6 @@ class _NameScreenState extends ConsumerState<NameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final itemProvider = ref.read(wishItemProvider.notifier);
-
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
@@ -115,8 +118,15 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
+                          widget.wishlist != null
+                              ? ColorMapper.toFlutterColor(
+                                  widget.wishlist!.color)
+                              : Theme.of(context).colorScheme.primary,
+                          widget.wishlist != null
+                              ? ColorMapper.toFlutterColor(
+                                      widget.wishlist!.color)
+                                  .withValues(alpha: 0.8)
+                              : Theme.of(context).colorScheme.secondary,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -124,10 +134,14 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.3),
+                          color: widget.wishlist != null
+                              ? ColorMapper.toFlutterColor(
+                                      widget.wishlist!.color)
+                                  .withValues(alpha: 0.3)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -254,39 +268,36 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                     return;
                   }
 
-                  await itemProvider.createItem(
-                    WishlistItem(
-                      title: nameController.text.trim(),
-                      description: commentsController.text.trim().isNotEmpty
-                          ? commentsController.text.trim()
-                          : null,
-                      url: linkController.text.trim().isNotEmpty
-                          ? linkController.text.trim()
-                          : null,
-                      imageUrl: photoController.text.trim().isNotEmpty
-                          ? photoController.text.trim()
-                          : null,
-                    ),
+                  final itemProvider = ref.read(wishItemProvider.notifier);
+
+                  final newItem = WishlistItem(
+                    wishlistId: widget.wishlist?.id,
+                    title: nameController.text.trim(),
+                    price: priceController.text.trim().isNotEmpty
+                        ? priceController.text.trim()
+                        : null,
+                    description: commentsController.text.trim().isNotEmpty
+                        ? commentsController.text.trim()
+                        : null,
+                    url: linkController.text.trim().isNotEmpty
+                        ? linkController.text.trim()
+                        : null,
                   );
 
-                  // Show success feedback
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Wish added successfully!'),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    );
-                  }
+                  await itemProvider.createItem(newItem);
 
+                  // Wait for the provider to update
+                  await Future.microtask(() {});
+                  ref.invalidate(itemsProvider);
+
+                  // Wait for the new data to be available
+                  await Future.microtask(() {});
                   widget.onPressed();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: widget.wishlist != null
+                      ? ColorMapper.toFlutterColor(widget.wishlist!.color)
+                      : Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -379,7 +390,9 @@ class _NameScreenState extends ConsumerState<NameScreen> {
               ),
               prefixIcon: Icon(
                 icon,
-                color: Theme.of(context).colorScheme.primary,
+                color: widget.wishlist != null
+                    ? ColorMapper.toFlutterColor(widget.wishlist!.color)
+                    : Theme.of(context).colorScheme.primary,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -402,7 +415,9 @@ class _NameScreenState extends ConsumerState<NameScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: widget.wishlist != null
+                      ? ColorMapper.toFlutterColor(widget.wishlist!.color)
+                      : Theme.of(context).colorScheme.primary,
                   width: 2,
                 ),
               ),

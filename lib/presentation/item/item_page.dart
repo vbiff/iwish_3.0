@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import 'package:i_wish/domain/models/wishlist_item.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/modern_card.dart';
+import '../../core/widgets/modern_button.dart';
+import '../../core/utils/color_mapper.dart';
+import '../../domain/models/wishlist_item.dart';
+import '../home/wishlist_provider/wishlist_provider.dart';
 
 class ItemPage extends ConsumerWidget {
   const ItemPage({
@@ -14,242 +20,324 @@ class ItemPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final wishlistsAsync = ref.watch(wishlistsProvider);
+
+    // Get the color of the wishlist this item belongs to
+    Color itemColor = Theme.of(context).colorScheme.primary;
+    if (wishlistsAsync.hasValue && item.wishlistId != null) {
+      final itemWishlist = wishlistsAsync.value!.firstWhere(
+        (w) => w.id == item.wishlistId,
+        orElse: () => wishlistsAsync.value!.first,
+      );
+      itemColor = ColorMapper.toFlutterColor(itemWishlist.color);
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // Custom App Bar
+            // Custom App Bar with gradient
             Container(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => context.router.maybePop(),
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Theme.of(context).colorScheme.onSurface,
+              padding: const EdgeInsets.only(bottom: AppTheme.spacing2xl),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    itemColor,
+                    itemColor.withValues(alpha: 0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Back button and title
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.spacingLg,
+                        AppTheme.spacing2xl,
+                        AppTheme.spacingLg,
+                        0,
+                      ),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => context.router.maybePop(),
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Wish Details',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(width: 40),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      item.title,
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance the back button
-                ],
+                  ],
+                ),
               ),
             ),
 
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(AppTheme.spacing2xl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Hero Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
+                    // Title Section
+                    ModernCard(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              Icons.card_giftcard_rounded,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            item.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Container(
+                                padding:
+                                    const EdgeInsets.all(AppTheme.spacingMd),
+                                decoration: BoxDecoration(
+                                  color: itemColor.withValues(alpha: 0.1),
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusSm),
                                 ),
-                            textAlign: TextAlign.center,
+                                child: Icon(
+                                  Icons.card_giftcard_rounded,
+                                  color: itemColor,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacingLg),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    if (item.price != null &&
+                                        item.price!.isNotEmpty) ...[
+                                      const SizedBox(
+                                          height: AppTheme.spacingSm),
+                                      Text(
+                                        item.price!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              color: itemColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          if (item.description?.isNotEmpty == true) ...[
-                            const SizedBox(height: 8),
+                          if (item.description != null &&
+                              item.description!.isNotEmpty) ...[
+                            const SizedBox(height: AppTheme.spacingLg),
+                            Text(
+                              'Description',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            const SizedBox(height: AppTheme.spacingSm),
                             Text(
                               item.description!,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppTheme.spacingXl),
 
-                    // Details Section
-                    if (item.url?.isNotEmpty == true ||
-                        item.imageUrl?.isNotEmpty == true) ...[
-                      Text(
-                        'Details',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
+                    // Image Section
+                    if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Image',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingLg),
+                          ModernCard(
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusMd),
+                              child: Image.network(
+                                item.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  padding:
+                                      const EdgeInsets.all(AppTheme.spacingXl),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMd),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.broken_image_rounded,
+                                        size: 48,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                      const SizedBox(
+                                          height: AppTheme.spacingMd),
+                                      Text(
+                                        'Failed to load image',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingXl),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                    ],
 
-                    // URL Card
-                    if (item.url?.isNotEmpty == true) ...[
-                      _buildDetailCard(
-                        context,
-                        'Link',
-                        item.url!,
-                        Icons.link_rounded,
-                        () {
-                          // TODO: Open URL
-                        },
+                    // Link Section
+                    if (item.url != null && item.url!.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Link',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingLg),
+                          ModernCard(
+                            onTap: () async {
+                              final url = Uri.parse(item.url!);
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding:
+                                      const EdgeInsets.all(AppTheme.spacingMd),
+                                  decoration: BoxDecoration(
+                                    color: itemColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusSm),
+                                  ),
+                                  child: Icon(
+                                    Icons.link_rounded,
+                                    color: itemColor,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: AppTheme.spacingLg),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'View Product',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                      const SizedBox(
+                                          height: AppTheme.spacingXs),
+                                      Text(
+                                        item.url!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: AppTheme.spacingLg),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                    ],
-
-                    // Image URL Card
-                    if (item.imageUrl?.isNotEmpty == true) ...[
-                      _buildDetailCard(
-                        context,
-                        'Photo',
-                        item.imageUrl!,
-                        Icons.photo_rounded,
-                        () {
-                          // TODO: Show image
-                        },
-                      ),
-                      const SizedBox(height: 32),
-                    ],
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailCard(BuildContext context, String title, String value,
-      IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color:
-                  Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.4),
-              size: 16,
             ),
           ],
         ),

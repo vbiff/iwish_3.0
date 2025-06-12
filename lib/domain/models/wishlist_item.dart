@@ -3,6 +3,7 @@ class WishlistItem {
   final String? wishlistId;
   final String title;
   final String? description;
+  final String? price;
   final String? imageUrl;
   final String? url;
 
@@ -11,6 +12,7 @@ class WishlistItem {
     this.wishlistId,
     required this.title,
     this.description,
+    this.price,
     this.imageUrl,
     this.url,
   });
@@ -20,6 +22,7 @@ class WishlistItem {
     String? wishlistId,
     String? title,
     String? Function()? description,
+    String? Function()? price,
     String? Function()? imageUrl,
     String? Function()? url,
   }) {
@@ -28,6 +31,7 @@ class WishlistItem {
       wishlistId: wishlistId ?? this.wishlistId,
       title: title ?? this.title,
       description: description != null ? description() : this.description,
+      price: price != null ? price() : this.price,
       imageUrl: imageUrl != null ? imageUrl() : this.imageUrl,
       url: url != null ? url() : this.url,
     );
