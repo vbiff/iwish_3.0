@@ -1,10 +1,12 @@
-import 'package:cupertino_container/cupertino_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:i_wish/presentation/auth/authentication/auth_gate.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:i_wish/presentation/auth/profile/profile_provider/profile_provider.dart';
-import '../../../../core/ui/styles.dart';
-import '../../../core/widgets/user_avatar.dart';
+
+import '../../../core/navigation/app_router.dart';
+import '../../home/items/items_provider.dart';
+import '../../home/wishlist_provider/wishlist_provider.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -23,162 +25,368 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.read(profileProvider.notifier);
+    final itemsAsync = ref.watch(itemsProvider);
+    final wishlistsAsync = ref.watch(wishlistsProvider);
+    final user = Supabase.instance.client.auth.currentUser;
+
     return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {},
-          child: const Text(
-            'You wish!',
-            style: AppStyles.textStyleSoFoSans,
-          ),
-        ),
-        actions: [
-          IconButton(
-              onPressed: () {
-                profile.logoutUser();
-                Navigator.of(context).pop();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => AuthGate(),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Profile',
+                        style:
+                            Theme.of(context).textTheme.displayMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        profile.logoutUser();
+                        if (context.mounted) {
+                          context.router.navigate(const AuthRouteRoute());
+                        }
+                      },
+                      icon: Icon(
+                        Icons.logout_rounded,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Profile Header
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                );
-              },
-              icon: const Icon(Icons.logout_rounded))
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Avatar
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(50),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 3,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // User Info
+                    Text(
+                      user?.email?.split('@').first.toUpperCase() ?? 'USER',
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'DREAM BIG!',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            letterSpacing: 2,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        user?.email ?? 'No email',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+
+            // Statistics Cards
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        'Wishlists',
+                        '${wishlistsAsync.value?.length ?? 0}',
+                        Icons.folder_rounded,
+                        Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        'Wishes',
+                        '${itemsAsync.value?.length ?? 0}',
+                        Icons.star_rounded,
+                        Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+
+            // Settings Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Settings',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+            // Settings Cards
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    _buildSettingCard(
+                      context,
+                      'Account Settings',
+                      'Manage your account preferences',
+                      Icons.settings_rounded,
+                      () {
+                        // TODO: Navigate to account settings
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSettingCard(
+                      context,
+                      'Notifications',
+                      'Configure your notification preferences',
+                      Icons.notifications_rounded,
+                      () {
+                        // TODO: Navigate to notifications settings
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSettingCard(
+                      context,
+                      'Privacy & Security',
+                      'Manage your privacy settings',
+                      Icons.security_rounded,
+                      () {
+                        // TODO: Navigate to privacy settings
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSettingCard(
+                      context,
+                      'Help & Support',
+                      'Get help and contact support',
+                      Icons.help_rounded,
+                      () {
+                        // TODO: Navigate to help
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(BuildContext context, String title, String value,
+      IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
-      backgroundColor: AppStyles.primaryColor,
-      body: Padding(
-        padding: const EdgeInsets.only(
-          top: AppStyles.paddingMain,
-          left: AppStyles.paddingMain,
-          right: AppStyles.paddingMain,
-          bottom: 48.0,
-        ),
-        child: CupertinoContainer(
-          width: double.infinity,
-          radius: BorderRadius.circular(16),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              spacing: 8.0,
-              children: [
-                const FittedBox(
-                  child: Text('Hi, Kseniia!\nDREAM BIG!'),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: UserAvatar(),
-                ),
-                Row(
-                  spacing: 4.0,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Kseniia',
-                          labelStyle: AppStyles.textStyleSoFoSans,
-                          fillColor: AppStyles.textField,
-                          filled: true,
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(
-                                  AppStyles.borderRadius)),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelStyle: AppStyles.textStyleSoFoSans,
-                          labelText: '02.06.1994',
-                          fillColor: AppStyles.textField,
-                          filled: true,
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(
-                                  AppStyles.borderRadius)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      labelStyle: AppStyles.textStyleSoFoSans,
-                      labelText: ref.watch(profileProvider).email,
-                      fillColor: AppStyles.textField,
-                      filled: true,
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius:
-                              BorderRadius.circular(AppStyles.borderRadius)),
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      height: 100,
-                      width: 170,
-                      decoration: BoxDecoration(
-                        color: AppStyles.primaryColor,
-                        borderRadius:
-                            BorderRadius.circular(AppStyles.borderRadius),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Wishlists',
-                              style: AppStyles.textStyleSoFoSans,
-                            ),
-                            Text(
-                              '10',
-                              style: TextStyle(fontSize: 32),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 100,
-                      width: 170,
-                      decoration: BoxDecoration(
-                        color: AppStyles.primaryColor,
-                        borderRadius:
-                            BorderRadius.circular(AppStyles.borderRadius),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Products',
-                              style: AppStyles.textStyleSoFoSans,
-                            ),
-                            Text(
-                              '108',
-                              style: TextStyle(fontSize: 32),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
             ),
           ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingCard(BuildContext context, String title, String subtitle,
+      IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.4),
+              size: 16,
+            ),
+          ],
         ),
       ),
     );

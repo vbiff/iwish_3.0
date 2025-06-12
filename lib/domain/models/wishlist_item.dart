@@ -1,5 +1,3 @@
-import 'package:flutter/widgets.dart';
-
 class WishlistItem {
   final String? id;
   final String? wishlistId;
@@ -21,9 +19,9 @@ class WishlistItem {
     String? id,
     String? wishlistId,
     String? title,
-    ValueGetter<String?>? description,
-    ValueGetter<String?>? imageUrl,
-    ValueGetter<String?>? url,
+    String? Function()? description,
+    String? Function()? imageUrl,
+    String? Function()? url,
   }) {
     return WishlistItem(
       id: id ?? this.id,

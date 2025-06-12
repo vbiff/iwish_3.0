@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:i_wish/presentation/auth/profile/profile_page.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:i_wish/presentation/home/home_page.dart';
 import 'package:i_wish/presentation/home/widget/name_screen.dart';
-import 'package:i_wish/presentation/item/favorites/favorites_provider.dart';
 import 'package:i_wish/presentation/home/items/items_provider.dart';
-import 'package:i_wish/presentation/wishlist/wishlist_page.dart';
+import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/widgets/draggable_bottom_sheet.dart';
+import '../../core/navigation/app_router.dart';
 
 class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
@@ -27,66 +26,135 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget activePage = HomePage();
-    var activePageTitle = 'Home';
+    Widget activePage;
+    String activePageTitle;
 
-    if (_selectedPageIndex == 1) {
-      final favoritesItems = ref.watch(favoriteProvider);
-      activePage = WishlistPage(
-        wishlist: favoritesItems,
-      );
-      activePageTitle = 'Favorites';
+    switch (_selectedPageIndex) {
+      case 0:
+        activePage = const HomePage();
+        activePageTitle = 'My Wishes';
+        break;
+      case 1:
+        activePage = const ProfilePage();
+        activePageTitle = 'Profile';
+        break;
+      default:
+        activePage = const HomePage();
+        activePageTitle = 'My Wishes';
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ProfilePage(),
-                  ),
-                );
-              },
-              icon: Icon(
-                Icons.person,
-              )),
-        ),
-        title: Text(activePageTitle),
-      ),
       body: activePage,
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: _selectPage,
-        currentIndex: _selectedPageIndex,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'wishlists'),
-          BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Favorites'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: NavigationBar(
+            onDestinationSelected: _selectPage,
+            selectedIndex: _selectedPageIndex,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            indicatorColor:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            destinations: [
+              NavigationDestination(
+                icon: Icon(
+                  Icons.home_outlined,
+                  color: _selectedPageIndex == 0
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                ),
+                selectedIcon: Icon(
+                  Icons.home_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline_rounded,
+                  color: _selectedPageIndex == 1
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                ),
+                selectedIcon: Icon(
+                  Icons.person_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('Make a wish'),
-        onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            showDragHandle: true,
-            useSafeArea: true,
-            builder: (BuildContext context) {
-              return DraggableBottomSheet(
-                child: NameScreen(
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: false,
+              useSafeArea: true,
+              backgroundColor: Colors.transparent,
+              builder: (BuildContext context) {
+                return NameScreen(
                   onPressed: () {
-                    ref.read(itemListProvider.notifier).getItems();
+                    ref.invalidate(itemsProvider);
                     Navigator.pop(context);
                   },
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          icon: const Icon(Icons.auto_awesome),
+          label: const Text(
+            'Make a Wish',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

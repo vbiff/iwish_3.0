@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
+import 'wishlist_color.dart';
 
 class Wishlist {
   Wishlist({
     required this.id,
+    required this.userId,
     required this.title,
-    this.description = '',
     required this.createdAt,
-    this.color = Colors.orange,
+    this.color = WishlistColor.orange,
   });
 
   final String id;
+  final String userId;
   final String title;
-  final String description;
   final DateTime createdAt;
-  final Color color;
+  final WishlistColor color;
 }

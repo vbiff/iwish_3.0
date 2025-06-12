@@ -1,8 +1,10 @@
-import 'package:i_wish/domain/models/wishlist_item.dart';
+import '../../core/result.dart';
+import '../../failures/failure.dart';
+import '../../models/wishlist_item.dart';
 
 abstract class WishItemRepository {
-  Future<void> createItem(WishlistItem item);
-  Future<void> updateItem();
-  Future<void> deleteItem(String id);
-  Future<List<WishlistItem>> getItems();
+  Future<Result<void, Failure>> createItem(WishlistItem item);
+  Future<Result<void, Failure>> updateItem(WishlistItem item);
+  Future<Result<void, Failure>> deleteItem(String id);
+  Future<Result<List<WishlistItem>, Failure>> getItems();
 }

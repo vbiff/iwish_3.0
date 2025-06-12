@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/logger.dart';
+import '../../../domain/core/result.dart';
 import '../../../domain/models/wishlist_item.dart';
 import '../../../domain/repository/wish_item/wish_item_repository.dart';
 
@@ -11,20 +13,18 @@ class WishItemNotifier extends StateNotifier<WishlistItem> {
   final WishItemRepository _itemRepository;
 
   Future<void> createItem(WishlistItem item) async {
-    try {
-      await _itemRepository.createItem(item);
-    } on Exception catch (e) {
-      print(e);
-    }
+    final result = await _itemRepository.createItem(item);
+    result.fold(
+      (_) => AppLogger.info('Item created successfully: ${item.title}'),
+      (failure) => AppLogger.error('Failed to create item: ${failure.message}'),
+    );
   }
 
   Future<void> deleteItem(String id) async {
-    try {
-      await _itemRepository.deleteItem(id);
-      // Refresh the items list after deletion
-      await _itemRepository.getItems();
-    } catch (e) {
-      print(e);
-    }
+    final result = await _itemRepository.deleteItem(id);
+    result.fold(
+      (_) => AppLogger.info('Item deleted successfully: $id'),
+      (failure) => AppLogger.error('Failed to delete item: ${failure.message}'),
+    );
   }
 }

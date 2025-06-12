@@ -1,34 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/logger.dart';
+import '../../../../domain/core/result.dart';
 import '../../../../domain/models/auth/user_profile.dart';
-import '../../../../domain/repository/auth/profile_repository.dart';
+import '../../../../domain/repository/auth_repository/profile_repository.dart';
 
 class ProfileNotifier extends StateNotifier<UserProfile> {
-  ProfileNotifier(this._authRepository) : super(UserProfile(id: '', email: ''));
+  ProfileNotifier(this._profileRepository)
+      : super(UserProfile(id: '', email: ''));
 
-  final ProfileScreenRepository _authRepository;
+  final ProfileRepository _profileRepository;
 
   Future<void> initialize() async {
-    try {
-      final user = await _authRepository.getProfile();
-      state = state.copyWith(
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone,
-        birthday: user.birthday,
-        avatarPhoto: user.avatarPhoto,
-      );
-    } catch (e) {
-      print(e);
-    }
+    final result = await _profileRepository.getProfile();
+    result.fold(
+      (user) {
+        state = state.copyWith(
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          birthday: user.birthday,
+          avatarPhoto: user.avatarPhoto,
+        );
+        AppLogger.info('Profile initialized successfully');
+      },
+      (failure) {
+        AppLogger.error('Failed to initialize profile: ${failure.message}');
+      },
+    );
   }
 
   void logoutUser() async {
-    try {
-      await _authRepository.signOut();
-    } on Exception catch (e) {
-      print(e);
-    }
+    final result = await _profileRepository.signOut();
+    result.fold(
+      (_) => AppLogger.info('User logged out successfully'),
+      (failure) => AppLogger.error('Logout failed: ${failure.message}'),
+    );
   }
 }
