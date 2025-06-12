@@ -7,7 +7,7 @@ import 'package:i_wish/presentation/wishlist/wish_item/wish_item_provider.dart';
 import '../../core/navigation/app_router.dart';
 import '../../domain/models/wishlist_item.dart';
 import '../../domain/models/wishlists.dart';
-import '../../domain/models/wishlist_color.dart';
+
 import '../../core/utils/color_mapper.dart';
 import '../home/items/items_provider.dart';
 import '../home/wishlist_provider/wishlist_provider.dart';
@@ -46,6 +46,21 @@ class WishlistPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      floatingActionButton: currentWishlist != null
+          ? FloatingActionButton.extended(
+              onPressed: () =>
+                  _showNewWishDialog(context, ref, currentWishlist!),
+              backgroundColor:
+                  ColorMapper.toFlutterColor(currentWishlist.color),
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add Wish'),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Column(
           children: [
@@ -91,71 +106,215 @@ class WishlistPage extends ConsumerWidget {
 
             // Hero Section
             if (currentWishlist != null)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      ColorMapper.toFlutterColor(currentWishlist.color),
-                      ColorMapper.toFlutterColor(currentWishlist.color)
-                          .withValues(alpha: 0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorMapper.toFlutterColor(currentWishlist.color)
-                          .withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            currentWishlist.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${itemsAsync.value?.length ?? 0} wishes',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                          ),
+              itemsAsync.when(
+                data: (allItems) {
+                  final filteredItemsCount = allItems
+                      .where((item) => item.wishlistId == currentWishlist!.id)
+                      .length;
+
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          ColorMapper.toFlutterColor(currentWishlist!.color),
+                          ColorMapper.toFlutterColor(currentWishlist.color)
+                              .withValues(alpha: 0.7),
                         ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              ColorMapper.toFlutterColor(currentWishlist.color)
+                                  .withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Icons.auto_awesome,
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                currentWishlist.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '$filteredItemsCount wishes',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  );
+                },
+                loading: () => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorMapper.toFlutterColor(currentWishlist!.color),
+                        ColorMapper.toFlutterColor(currentWishlist.color)
+                            .withValues(alpha: 0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorMapper.toFlutterColor(currentWishlist.color)
+                            .withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              currentWishlist.title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '... wishes',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                error: (error, stackTrace) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorMapper.toFlutterColor(currentWishlist!.color),
+                        ColorMapper.toFlutterColor(currentWishlist.color)
+                            .withValues(alpha: 0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorMapper.toFlutterColor(currentWishlist.color)
+                            .withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              currentWishlist.title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '0 wishes',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -164,18 +323,30 @@ class WishlistPage extends ConsumerWidget {
             // Content
             Expanded(
               child: itemsAsync.when(
-                data: (currentItems) {
-                  if (currentItems.isEmpty) {
-                    return _buildEmptyState(context);
+                data: (allItems) {
+                  // Filter items based on wishlist
+                  final List<WishlistItem> filteredItems;
+                  if (currentWishlist != null) {
+                    // Show only items for this specific wishlist
+                    filteredItems = allItems
+                        .where((item) => item.wishlistId == currentWishlist!.id)
+                        .toList();
+                  } else {
+                    // Show all items (for "All Wishes" page)
+                    filteredItems = allItems;
+                  }
+
+                  if (filteredItems.isEmpty) {
+                    return _buildEmptyState(context, ref, currentWishlist);
                   }
 
                   return ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: currentItems.length,
+                    itemCount: filteredItems.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final item = currentItems[index];
+                      final item = filteredItems[index];
                       return _buildWishItem(
                           context, ref, item, itemProvider, currentWishlist);
                     },
@@ -305,7 +476,8 @@ class WishlistPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(
+      BuildContext context, WidgetRef ref, Wishlist? currentWishlist) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -350,9 +522,9 @@ class WishlistPage extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Add new wish functionality
-              },
+              onPressed: currentWishlist != null
+                  ? () => _showNewWishDialog(context, ref, currentWishlist)
+                  : null,
               icon: const Icon(Icons.add_rounded),
               label: const Text('Add Your First Wish'),
               style: ElevatedButton.styleFrom(
@@ -442,6 +614,223 @@ class WishlistPage extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showNewWishDialog(
+      BuildContext context, WidgetRef ref, Wishlist wishlist) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final urlController = TextEditingController();
+
+    void disposeControllers() {
+      titleController.dispose();
+      descriptionController.dispose();
+      urlController.dispose();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return PopScope(
+          onPopInvoked: (didPop) {
+            if (didPop) {
+              disposeControllers();
+            }
+          },
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: ColorMapper.toFlutterColor(wishlist.color)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: ColorMapper.toFlutterColor(wishlist.color),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Add New Wish',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Add to "${wishlist.title}"',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Title Field
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Wish Title *',
+                      hintText: 'What do you wish for?',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.star_outline,
+                        color: ColorMapper.toFlutterColor(wishlist.color),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description Field
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      hintText: 'Tell us more about this wish...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.description_outlined,
+                        color: ColorMapper.toFlutterColor(wishlist.color),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // URL Field
+                  TextField(
+                    controller: urlController,
+                    decoration: InputDecoration(
+                      labelText: 'Link (Optional)',
+                      hintText: 'https://example.com',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.link_outlined,
+                        color: ColorMapper.toFlutterColor(wishlist.color),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  disposeControllers();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (titleController.text.trim().isNotEmpty) {
+                    final newWish = WishlistItem(
+                      wishlistId: wishlist.id,
+                      title: titleController.text.trim(),
+                      description: descriptionController.text.trim().isNotEmpty
+                          ? descriptionController.text.trim()
+                          : null,
+                      url: urlController.text.trim().isNotEmpty
+                          ? urlController.text.trim()
+                          : null,
+                    );
+
+                    try {
+                      await ref
+                          .read(wishItemProvider.notifier)
+                          .createItem(newWish);
+                      ref.invalidate(itemsProvider);
+
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        disposeControllers();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Wish added to ${wishlist.title}!'),
+                            backgroundColor:
+                                ColorMapper.toFlutterColor(wishlist.color),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to add wish: $e'),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Please enter a wish title'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorMapper.toFlutterColor(wishlist.color),
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Add Wish'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
