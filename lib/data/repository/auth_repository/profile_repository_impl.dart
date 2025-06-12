@@ -33,4 +33,17 @@ final class ProfileRepositoryImpl implements ProfileRepository {
       return Error(AuthFailure('Failed to get profile: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Result<String, Failure>> updateProfilePhoto(String imagePath) async {
+    try {
+      final photoUrl = await profileService.updateProfilePhoto(imagePath);
+      AppLogger.info('Profile photo updated successfully');
+      return Success(photoUrl);
+    } catch (e) {
+      AppLogger.error('Update profile photo failed', e);
+      return Error(
+          ServerFailure('Failed to update profile photo: ${e.toString()}'));
+    }
+  }
 }

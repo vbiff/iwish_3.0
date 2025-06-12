@@ -38,4 +38,18 @@ class ProfileNotifier extends StateNotifier<UserProfile> {
       (failure) => AppLogger.error('Logout failed: ${failure.message}'),
     );
   }
+
+  Future<void> updateProfilePhoto(String imagePath) async {
+    final result = await _profileRepository.updateProfilePhoto(imagePath);
+    result.fold(
+      (photoUrl) {
+        // Immediately update the state with the new photo URL
+        state = state.copyWith(avatarPhoto: photoUrl);
+        AppLogger.info(
+            'Profile photo updated successfully with URL: $photoUrl');
+      },
+      (failure) =>
+          AppLogger.error('Failed to update profile photo: ${failure.message}'),
+    );
+  }
 }

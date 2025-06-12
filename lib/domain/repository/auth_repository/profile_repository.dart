@@ -5,4 +5,5 @@ import '../../models/auth/user_profile.dart';
 abstract class ProfileRepository {
   Future<Result<UserProfile, Failure>> getProfile();
   Future<Result<void, Failure>> signOut();
+  Future<Result<String, Failure>> updateProfilePhoto(String imagePath);
 }

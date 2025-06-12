@@ -59,11 +59,18 @@ class AuthWrapperPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // First check current session state
+    final currentSession = Supabase.instance.client.auth.currentSession;
+
     return StreamBuilder(
       stream: Supabase.instance.client.auth.onAuthStateChange,
+      initialData: currentSession != null
+          ? AuthState(AuthChangeEvent.signedIn, currentSession)
+          : AuthState(AuthChangeEvent.signedOut, null),
       builder: (context, snapshot) {
-        // Loading state
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        // Loading state only if we're truly waiting and have no initial data
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator.adaptive(),
@@ -72,12 +79,15 @@ class AuthWrapperPage extends StatelessWidget {
         }
 
         // Check if there is valid session
-        final session = snapshot.hasData ? snapshot.data!.session : null;
+        final session =
+            snapshot.hasData ? snapshot.data!.session : currentSession;
 
         if (session != null) {
           // User is authenticated, redirect to home
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.router.navigate(const TabsRoute());
+            if (context.router.current.name != TabsRoute.name) {
+              context.router.replaceAll([const TabsRoute()]);
+            }
           });
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -85,7 +95,9 @@ class AuthWrapperPage extends StatelessWidget {
         } else {
           // User is not authenticated, redirect to auth
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.router.navigate(const AuthRouteRoute());
+            if (context.router.current.name != AuthRouteRoute.name) {
+              context.router.replaceAll([const AuthRouteRoute()]);
+            }
           });
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),

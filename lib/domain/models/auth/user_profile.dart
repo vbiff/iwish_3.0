@@ -32,4 +32,9 @@ class UserProfile {
       avatarPhoto: avatarPhoto ?? this.avatarPhoto,
     );
   }
+
+  @override
+  String toString() {
+    return 'UserProfile(id: $id, email: $email, name: $name, phone: $phone, birthday: $birthday, avatarPhoto: $avatarPhoto)';
+  }
 }
