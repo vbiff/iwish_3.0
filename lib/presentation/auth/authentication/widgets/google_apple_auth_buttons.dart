@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../../core/ui/styles.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class GoogeAppleAuthButtons extends StatelessWidget {
   const GoogeAppleAuthButtons({
@@ -17,8 +17,8 @@ class GoogeAppleAuthButtons extends StatelessWidget {
             height: 100,
             width: 170,
             decoration: BoxDecoration(
-              color: AppStyles.textField,
-              borderRadius: BorderRadius.circular(AppStyles.borderRadius),
+              color: AppTheme.textField,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
             ),
             child: const Padding(
               padding: EdgeInsets.all(8.0),
@@ -41,8 +41,8 @@ class GoogeAppleAuthButtons extends StatelessWidget {
             height: 100,
             width: 170,
             decoration: BoxDecoration(
-              color: AppStyles.textField,
-              borderRadius: BorderRadius.circular(AppStyles.borderRadius),
+              color: AppTheme.textField,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
             ),
             child: const Padding(
               padding: EdgeInsets.all(8.0),

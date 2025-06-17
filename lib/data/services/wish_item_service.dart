@@ -42,7 +42,7 @@ class WishItemService {
       final items = data
           .map((item) => WishlistItem(
                 id: item['id'].toString(),
-                wishlistId: item['wishlist_id']?.toString(),
+                wishlistId: item['wishlist_id']?.toString() ?? '',
                 title: item['title'] as String,
                 description: item['comments'] as String?,
                 price: item['price'] as String?,

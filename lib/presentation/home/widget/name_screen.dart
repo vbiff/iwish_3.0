@@ -271,7 +271,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
                   final itemProvider = ref.read(wishItemProvider.notifier);
 
                   final newItem = WishlistItem(
-                    wishlistId: widget.wishlist?.id,
+                    wishlistId: widget.wishlist?.id ?? '',
                     title: nameController.text.trim(),
                     price: priceController.text.trim().isNotEmpty
                         ? priceController.text.trim()

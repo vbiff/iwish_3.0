@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/navigation/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/providers/app_providers.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  final _appRouter = AppRouter();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize app state when the app starts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appNotifierProvider.notifier).initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +48,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
 
       // Router Configuration
-      routerConfig: AppRouter().config(),
+      routerConfig: _appRouter.config(),
 
       // Performance Optimizations
       builder: (context, child) {

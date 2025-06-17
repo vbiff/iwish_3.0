@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../ui/styles.dart';
+import '../theme/app_theme.dart';
 
 class IwishTextFormFieldWidget extends StatelessWidget {
   const IwishTextFormFieldWidget({
@@ -21,15 +21,15 @@ class IwishTextFormFieldWidget extends StatelessWidget {
     return TextFormField(
       controller: _controller,
       validator: _validationFunc,
-      cursorColor: AppStyles.secondaryColor,
+      cursorColor: AppTheme.secondaryColor,
       decoration: InputDecoration(
         labelText: _labelText,
-        labelStyle: AppStyles.textStyleSoFoSans,
-        fillColor: AppStyles.primaryColor,
+        labelStyle: AppTheme.textStyleSoFoSans,
+        fillColor: AppTheme.primaryColor,
         filled: true,
         border: OutlineInputBorder(
             borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(AppStyles.borderRadius)),
+            borderRadius: BorderRadius.circular(AppTheme.borderRadius)),
       ),
     );
   }

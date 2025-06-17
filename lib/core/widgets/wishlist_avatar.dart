@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
-import '../ui/styles.dart';
+class WishListAvatar extends StatelessWidget {
+  const WishListAvatar(
+      {super.key, required this.pictureUrl, required this.nameShortcut});
 
-class WishlistAvatarWidget extends StatelessWidget {
-  const WishlistAvatarWidget({
-    super.key,
-    required this.color,
-  });
-
-  final Color color;
+  final String pictureUrl;
+  final String nameShortcut;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Red top widget
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: AppStyles.pictureLength,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 0.6,
-                colors: [
-                  color,
-                  AppStyles.primaryColor,
-                ],
+    return CircleAvatar(
+      radius: 50,
+      backgroundColor: AppTheme.primaryColor,
+      child: pictureUrl.isEmpty
+          ? Text(
+              nameShortcut,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryBlack,
+              ),
+            )
+          : ClipOval(
+              child: SizedBox(
+                height: AppTheme.pictureLength,
+                width: AppTheme.pictureLength,
+                child: Image.network(
+                  pictureUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.person,
+                    size: AppTheme.pictureLength * 0.6,
+                    color: AppTheme.primaryBlack,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ],
     );
   }
 }

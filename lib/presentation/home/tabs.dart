@@ -1,148 +1,127 @@
 import 'package:flutter/material.dart';
-
-import 'package:i_wish/presentation/home/home_page.dart';
-import 'package:i_wish/presentation/home/widget/name_screen.dart';
-import 'package:i_wish/presentation/home/items/items_provider.dart';
-import 'package:i_wish/presentation/auth/profile/profile_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:auto_route/auto_route.dart';
 
-class TabsScreen extends ConsumerStatefulWidget {
-  const TabsScreen({super.key});
+import '../../core/theme/app_theme.dart';
+import 'home_page.dart';
+import '../auth/profile/profile_page.dart';
+
+// Create alias for backward compatibility
+typedef TabsScreen = TabsPage;
+
+@RoutePage()
+class TabsPage extends ConsumerStatefulWidget {
+  const TabsPage({super.key});
 
   @override
-  ConsumerState<TabsScreen> createState() => _TabsScreenState();
+  ConsumerState<TabsPage> createState() => _TabsPageState();
 }
 
-class _TabsScreenState extends ConsumerState<TabsScreen> {
-  int _selectedPageIndex = 0;
+class _TabsPageState extends ConsumerState<TabsPage> {
+  int _currentIndex = 0;
 
-  void _selectPage(int index) {
-    setState(() {
-      _selectedPageIndex = index;
-    });
-  }
+  final List<Widget> _pages = [
+    const HomePage(),
+    const ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    Widget activePage;
-
-    switch (_selectedPageIndex) {
-      case 0:
-        activePage = const HomePage();
-        break;
-      case 1:
-        activePage = const ProfilePage();
-        break;
-      default:
-        activePage = const HomePage();
-    }
-
     return Scaffold(
-      body: activePage,
+      backgroundColor: AppTheme.backgroundWhite,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: AppTheme.backgroundWhite,
           boxShadow: [
             BoxShadow(
-              color:
-                  Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+              color: AppTheme.primaryBlack.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: NavigationBar(
-            onDestinationSelected: _selectPage,
-            selectedIndex: _selectedPageIndex,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            indicatorColor:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-            destinations: [
-              NavigationDestination(
-                icon: Icon(
-                  Icons.home_outlined,
-                  color: _selectedPageIndex == 0
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing24,
+              vertical: AppTheme.spacing8,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  index: 0,
+                  isSelected: _currentIndex == 0,
                 ),
-                selectedIcon: Icon(
-                  Icons.home_rounded,
-                  color: Theme.of(context).colorScheme.primary,
+                _buildNavItem(
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
+                  index: 1,
+                  isSelected: _currentIndex == 1,
                 ),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Icons.person_outline_rounded,
-                  color: _selectedPageIndex == 1
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                ),
-                selectedIcon: Icon(
-                  Icons.person_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                label: 'Profile',
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-      floatingActionButton: Container(
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing20,
+          vertical: AppTheme.spacing12,
+        ),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
+          color: isSelected
+              ? AppTheme.primaryYellow.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppTheme.radius16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
               color:
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+                  isSelected ? AppTheme.primaryBlack : AppTheme.secondaryGray,
+              size: 24,
             ),
+            if (isSelected) ...[
+              const SizedBox(width: AppTheme.spacing8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryBlack,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
           ],
         ),
-        child: FloatingActionButton(
-          onPressed: () {
-            showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              showDragHandle: false,
-              useSafeArea: true,
-              backgroundColor: Colors.transparent,
-              builder: (BuildContext context) {
-                return NameScreen(
-                  onPressed: () {
-                    ref.invalidate(itemsProvider);
-                    Navigator.pop(context);
-                  },
-                );
-              },
-            );
-          },
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          child: const Icon(Icons.auto_awesome, size: 24),
-        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

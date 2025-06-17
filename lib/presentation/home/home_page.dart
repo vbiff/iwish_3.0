@@ -5,13 +5,13 @@ import 'package:auto_route/auto_route.dart';
 import '../../core/navigation/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_value_widget.dart';
-import '../../core/widgets/modern_card.dart';
-import '../../core/widgets/modern_button.dart';
+import '../../core/widgets/figma_card.dart';
+import '../../core/widgets/figma_button.dart';
+import '../../core/utils/color_mapper.dart';
 import '../../domain/models/wishlist_item.dart';
 import '../../domain/models/wishlists.dart';
 import 'items/items_provider.dart';
 import 'wishlist_provider/wishlist_provider.dart';
-import 'widget/wishlist_folder.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -22,133 +22,157 @@ class HomePage extends ConsumerWidget {
     final wishlistsAsync = ref.watch(wishlistsProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppTheme.backgroundWhite,
       body: SafeArea(
-        child: ModernRefreshIndicator(
+        child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(itemsProvider);
             ref.invalidate(wishlistsProvider);
           },
+          color: AppTheme.primaryYellow,
+          backgroundColor: AppTheme.backgroundWhite,
           child: AsyncValueWidget(
             value: itemsAsync,
             data: (items) => CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                // Header
+                // Header Section
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      AppTheme.spacing2xl,
-                      AppTheme.spacing3xl,
-                      AppTheme.spacing2xl,
-                      AppTheme.spacing2xl,
+                      AppTheme.spacing24,
+                      AppTheme.spacing32,
+                      AppTheme.spacing24,
+                      0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        // Main Title
+                        const Text(
                           'My Wishes',
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryBlack,
+                            letterSpacing: -0.8,
+                          ),
                         ),
-                        const SizedBox(height: AppTheme.spacingSm),
-                        Text(
-                          'Organize and track your dreams',
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
+                        const SizedBox(height: AppTheme.spacing8),
+
+                        // Subtitle
+                        const Text(
+                          'Track your dreams and make them come true',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.secondaryGray,
+                            letterSpacing: -0.1,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppTheme.spacing32),
+
+                        // Quick Stats Section
+                        AsyncValueWidget(
+                          value: wishlistsAsync,
+                          data: (wishlists) => Row(
+                            children: [
+                              Expanded(
+                                child: FigmaStatsCard(
+                                  title: 'Total Wishes',
+                                  value: '${items.length}',
+                                  icon: Icons.favorite_rounded,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacing16),
+                              Expanded(
+                                child: FigmaStatsCard(
+                                  title: 'Wishlists',
+                                  value: '${wishlists.length}',
+                                  icon: Icons.folder_rounded,
+                                ),
+                              ),
+                            ],
+                          ),
+                          loading: () => Row(
+                            children: [
+                              Expanded(
+                                child: FigmaStatsCard(
+                                  title: 'Total Wishes',
+                                  value: '${items.length}',
+                                  icon: Icons.favorite_rounded,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacing16),
+                              const Expanded(
+                                child: FigmaStatsCard(
+                                  title: 'Wishlists',
+                                  value: '...',
+                                  icon: Icons.folder_rounded,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                // Quick Stats Card
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppTheme.spacing48),
+                ),
+
+                // Wishlists Section
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing2xl),
-                    child: ModernGradientCard(
-                      gradient: AppTheme.primaryGradient,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _StatsItem(
-                              title: 'Total Wishes',
-                              value: '${items.length}',
-                              icon: Icons.star_rounded,
-                            ),
+                        horizontal: AppTheme.spacing24),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Your Wishlists',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryBlack,
+                            letterSpacing: -0.4,
                           ),
-                          const SizedBox(width: AppTheme.spacingLg),
-                          AsyncValueWidget(
-                            value: wishlistsAsync,
-                            data: (wishlists) => Expanded(
-                              child: _StatsItem(
-                                title: 'Wishlists',
-                                value: '${wishlists.length}',
-                                icon: Icons.folder_rounded,
-                              ),
-                            ),
-                            loading: () => Expanded(
-                              child: _StatsItem(
-                                title: 'Wishlists',
-                                value: '...',
-                                icon: Icons.folder_rounded,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        FigmaButton(
+                          text: 'View All',
+                          variant: FigmaButtonVariant.ghost,
+                          size: FigmaButtonSize.small,
+                          onPressed: () {
+                            // Navigate to all wishlists
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
 
                 const SliverToBoxAdapter(
-                    child: SizedBox(height: AppTheme.spacing3xl)),
-
-                // Section Title
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing2xl),
-                    child: Text(
-                      'Your Wishlists',
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                    ),
-                  ),
+                  child: SizedBox(height: AppTheme.spacing20),
                 ),
-
-                const SliverToBoxAdapter(
-                    child: SizedBox(height: AppTheme.spacingLg)),
 
                 // Wishlists Grid
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing2xl),
-                    child: AsyncValueWidget(
-                      value: wishlistsAsync,
-                      data: (wishlists) =>
-                          _buildWishlistGrid(context, ref, items, wishlists),
-                      loading: () => _buildLoadingGrid(),
-                    ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing24),
+                  sliver: AsyncValueWidget(
+                    value: wishlistsAsync,
+                    data: (wishlists) =>
+                        _buildWishlistGrid(context, ref, items, wishlists),
+                    loading: () => _buildLoadingGrid(),
                   ),
                 ),
 
                 const SliverToBoxAdapter(
-                    child: SizedBox(height: AppTheme.spacing3xl)),
+                  child: SizedBox(height: AppTheme.spacing48),
+                ),
               ],
             ),
           ),
@@ -161,343 +185,117 @@ class HomePage extends ConsumerWidget {
       List<WishlistItem> items, List<Wishlist> wishlists) {
     final List<Widget> gridItems = [
       // All Wishes Card
-      _AllWishesCard(items: items),
+      FigmaWishCard(
+        title: 'All Items',
+        count: items.length,
+        color: AppTheme.primaryYellow,
+        onTap: () {
+          context.router.push(
+            WishlistRouteRoute(
+              wishlist: items,
+              title: 'All my wishes',
+            ),
+          );
+        },
+      ),
 
       // Individual Wishlists
-      ...wishlists.map((wishlist) => GestureDetector(
-            onLongPress: () =>
-                _showDeleteWishlistDialog(context, ref, wishlist),
-            child: WishlistFolder(
-              wishlist: wishlist,
-              id: wishlist.id,
-            ),
-          )),
+      ...wishlists.take(5).map((wishlist) {
+        final wishlistItems =
+            items.where((item) => item.wishlistId == wishlist.id).length;
+        return FigmaWishCard(
+          title: wishlist.title,
+          count: wishlistItems,
+          color: ColorMapper.toFlutterColor(wishlist.color),
+          onTap: () {
+            context.router.push(WishlistRouteRoute(
+              wishlistObject: wishlist,
+              wishlist: items
+                  .where((item) => item.wishlistId == wishlist.id)
+                  .toList(),
+            ));
+          },
+        );
+      }),
 
       // Add New Wishlist Card
-      _AddWishlistCard(),
+      FigmaAddCard(
+        title: 'New Wishlist',
+        subtitle: 'Create a new collection',
+        onTap: () => context.router.push(NewWishlistRouteRoute()),
+      ),
     ];
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio: 1.2,
-      crossAxisSpacing: AppTheme.spacingLg,
-      mainAxisSpacing: AppTheme.spacingLg,
-      children: gridItems,
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: AppTheme.spacing16,
+        mainAxisSpacing: AppTheme.spacing16,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => gridItems[index],
+        childCount: gridItems.length,
+      ),
     );
   }
 
   Widget _buildLoadingGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio: 1.2,
-      crossAxisSpacing: AppTheme.spacingLg,
-      mainAxisSpacing: AppTheme.spacingLg,
-      children: List.generate(4, (index) => _LoadingCard()),
-    );
-  }
-
-  void _showDeleteWishlistDialog(
-      BuildContext context, WidgetRef ref, Wishlist wishlist) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppTheme.spacingSm),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                ),
-                child: Icon(
-                  Icons.delete_outline_rounded,
-                  color: Theme.of(context).colorScheme.error,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: AppTheme.spacingMd),
-              Expanded(
-                child: Text(
-                  'Delete Wishlist',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Are you sure you want to delete "${wishlist.title}"?',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: AppTheme.spacingMd),
-              ModernCard(
-                padding: const EdgeInsets.all(AppTheme.spacingMd),
-                color: Theme.of(context)
-                    .colorScheme
-                    .errorContainer
-                    .withValues(alpha: 0.3),
-                elevation: 0,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: Theme.of(context).colorScheme.error,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppTheme.spacingSm),
-                    Expanded(
-                      child: Text(
-                        'This action cannot be undone. All wishes in this list will also be deleted.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            ModernButton.ghost(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ModernButton.destructive(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                try {
-                  await ref
-                      .read(wishlistsProvider.notifier)
-                      .deleteWishlist(wishlist.id);
-                  ref.invalidate(itemsProvider);
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${wishlist.title} deleted successfully'),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusMd),
-                        ),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to delete wishlist: $e'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusMd),
-                        ),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _StatsItem extends StatelessWidget {
-  const _StatsItem({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
-
-  final String title;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              color: Colors.white.withValues(alpha: 0.9),
-              size: 20,
-            ),
-            const SizedBox(width: AppTheme.spacingSm),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppTheme.spacingXs),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AllWishesCard extends StatelessWidget {
-  const _AllWishesCard({required this.items});
-
-  final List<WishlistItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return ModernCard(
-      onTap: () => context.router.push(
-        WishlistRouteRoute(
-          wishlist: items,
-          title: 'All my wishes',
-        ),
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: AppTheme.spacing16,
+        mainAxisSpacing: AppTheme.spacing16,
       ),
-      gradient: LinearGradient(
-        colors: [
-          Theme.of(context).colorScheme.tertiary,
-          Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.8),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spacingMd),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            'All Wishes',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-          const SizedBox(height: AppTheme.spacingXs),
-          Text(
-            '${items.length} items',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AddWishlistCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ModernCard(
-      onTap: () => context.router.push(NewWishlistRouteRoute()),
-      color: Theme.of(context).colorScheme.surface,
-      border: Border.all(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        width: 2,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spacingLg),
-            decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            ),
-            child: Icon(
-              Icons.add_rounded,
-              color: Theme.of(context).colorScheme.primary,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: AppTheme.spacingMd),
-          Text(
-            'New Wishlist',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ],
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => const _LoadingCard(),
+        childCount: 6,
       ),
     );
   }
 }
 
 class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
   @override
   Widget build(BuildContext context) {
-    return ModernCard(
+    return FigmaCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Loading color indicator
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              color: AppTheme.lightGray,
+              borderRadius: BorderRadius.circular(AppTheme.radius12),
             ),
           ),
+
           const Spacer(),
+
+          // Loading title
           Container(
             width: double.infinity,
             height: 16,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+              color: AppTheme.lightGray,
+              borderRadius: BorderRadius.circular(AppTheme.radius4),
             ),
           ),
-          const SizedBox(height: AppTheme.spacingSm),
+
+          const SizedBox(height: AppTheme.spacing8),
+
+          // Loading count
           Container(
-            width: 80,
+            width: 60,
             height: 12,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+              color: AppTheme.lightGray,
+              borderRadius: BorderRadius.circular(AppTheme.radius4),
             ),
           ),
         ],

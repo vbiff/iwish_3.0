@@ -67,7 +67,7 @@ class ModernLoadingWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              boxShadow: [AppTheme.cardShadow],
+              boxShadow: AppTheme.cardShadow,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

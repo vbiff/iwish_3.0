@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i_wish/presentation/auth/authentication/auth_provider/auth_provider.dart';
-import '../../../../../../core/ui/styles.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/main_button.dart';
 import '../../../../core/widgets/text_form_field.dart';
 import 'google_apple_auth_buttons.dart';
@@ -22,7 +22,7 @@ class SignUpTabPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.read(authProvider.notifier);
     return Column(
-      spacing: AppStyles.paddingMain,
+      spacing: AppTheme.paddingMain,
       children: [
         const Text('WELCOME'),
         IwishTextFormFieldWidget(
