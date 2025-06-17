@@ -81,7 +81,6 @@ class _ItemPageState extends ConsumerState<ItemPage>
   @override
   Widget build(BuildContext context) {
     final wishlistsAsync = ref.watch(wishlistsProvider);
-    final itemProvider = ref.read(wishItemProvider.notifier);
 
     // Get the color of the wishlist this item belongs to
     Color itemColor = Theme.of(context).colorScheme.primary;
@@ -128,8 +127,8 @@ class _ItemPageState extends ConsumerState<ItemPage>
                               shaderCallback: (Rect bounds) {
                                 return LinearGradient(
                                   colors: [
-                                    Colors.white.withOpacity(0.1),
-                                    Colors.white.withOpacity(0.05),
+                                    Colors.white.withValues(alpha: 0.1),
+                                    Colors.white.withValues(alpha: 0.05),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
@@ -143,7 +142,7 @@ class _ItemPageState extends ConsumerState<ItemPage>
                                 child: Icon(
                                   Icons.auto_awesome,
                                   size: 150,
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withValues(alpha: 0.1),
                                 ),
                               ),
                             ),
@@ -169,8 +168,8 @@ class _ItemPageState extends ConsumerState<ItemPage>
                                           .textTheme
                                           .titleMedium
                                           ?.copyWith(
-                                            color:
-                                                Colors.white.withOpacity(0.9),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.9),
                                           ),
                                     ),
                                     const SizedBox(height: AppTheme.spacingSm),
@@ -513,54 +512,6 @@ class _ItemPageState extends ConsumerState<ItemPage>
               ),
             ],
           ),
-
-          // Floating Action Button
-          Positioned(
-            bottom: AppTheme.spacing2xl,
-            right: AppTheme.spacing2xl,
-            child: ScaleTransition(
-              scale: _fadeAnimation,
-              child: FloatingActionButton.extended(
-                onPressed: () async {
-                  // Show delete confirmation
-                  final shouldDelete = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Delete Wish'),
-                      content: const Text(
-                          'Are you sure you want to delete this wish?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text(
-                            'Delete',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (shouldDelete == true && mounted) {
-                    await itemProvider.deleteItem(_currentItem.id!);
-                    ref.invalidate(itemsProvider);
-                    if (mounted) {
-                      context.router.pop();
-                    }
-                  }
-                },
-                backgroundColor: Theme.of(context).colorScheme.error,
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Delete Wish'),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -569,6 +520,10 @@ class _ItemPageState extends ConsumerState<ItemPage>
   Future<void> _launchURL(
       BuildContext context, String urlString, Color itemColor) async {
     try {
+      if (!urlString.startsWith('http://') &&
+          !urlString.startsWith('https://')) {
+        urlString = 'https://$urlString';
+      }
       final url = Uri.parse(urlString);
       if (await canLaunchUrl(url)) {
         await launchUrl(
@@ -659,6 +614,7 @@ class _EditItemDialogState extends ConsumerState<_EditItemDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       ),
@@ -773,7 +729,8 @@ class _EditItemDialogState extends ConsumerState<_EditItemDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ModernButton.ghost(
-                    onPressed: _isLoading ? null : () => context.router.pop(),
+                    onPressed:
+                        _isLoading ? null : () => context.router.maybePop(),
                     child: const Text('Cancel'),
                   ),
                   const SizedBox(width: AppTheme.spacingMd),
@@ -829,7 +786,7 @@ class _EditItemDialogState extends ConsumerState<_EditItemDialog> {
                               widget.onItemUpdated(updatedItem);
 
                               if (context.mounted) {
-                                context.router.pop();
+                                context.router.maybePop();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text(
@@ -880,7 +837,7 @@ class _EditItemDialogState extends ConsumerState<_EditItemDialog> {
                                   AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text('Save Changes'),
+                        : const Text('Save'),
                   ),
                 ],
               ),

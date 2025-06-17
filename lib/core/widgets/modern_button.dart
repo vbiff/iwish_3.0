@@ -113,6 +113,46 @@ class ModernButton extends StatelessWidget {
       child: buttonChild,
     );
 
+    if (variant == ModernButtonVariant.primary && gradient != null) {
+      button = Container(
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          child: InkWell(
+            onTap: isEnabled ? onPressed : null,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            child: Container(
+              padding: _getPadding(),
+              child: Center(
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: _getFontSize(),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  child: icon != null
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(icon,
+                                size: _getIconSize(), color: Colors.white),
+                            const SizedBox(width: AppTheme.spacingSm),
+                            child,
+                          ],
+                        )
+                      : child,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (fullWidth) {
       button = SizedBox(
         width: double.infinity,
@@ -131,7 +171,8 @@ class ModernButton extends StatelessWidget {
     switch (variant) {
       case ModernButtonVariant.primary:
         return ElevatedButton.styleFrom(
-          backgroundColor: gradient == null ? colorScheme.primary : null,
+          backgroundColor:
+              gradient == null ? colorScheme.primary : Colors.transparent,
           foregroundColor: Colors.white,
           disabledBackgroundColor:
               colorScheme.onSurface.withValues(alpha: 0.12),
@@ -230,16 +271,10 @@ class ModernButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          boxShadow: [
-            BoxShadow(
-              color: theme.shadowColor.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Material(
           color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),

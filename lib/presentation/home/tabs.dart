@@ -108,7 +108,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color:
@@ -118,7 +118,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
             ),
           ],
         ),
-        child: FloatingActionButton.extended(
+        child: FloatingActionButton(
           onPressed: () {
             showModalBottomSheet<void>(
               context: context,
@@ -139,13 +139,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           elevation: 0,
-          icon: const Icon(Icons.auto_awesome),
-          label: const Text(
-            'Make a Wish',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: const Icon(Icons.auto_awesome, size: 24),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

@@ -96,17 +96,34 @@ class _WishlistPageState extends ConsumerState<WishlistPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       floatingActionButton: currentWishlist != null
-          ? ModernFloatingActionButton(
-              onPressed: () =>
-                  _showNewWishDialog(context, ref, currentWishlist!),
-              icon: Icons.add_rounded,
-              label: 'Add Wish',
-              gradient: LinearGradient(
-                colors: [
-                  ColorMapper.toFlutterColor(currentWishlist.color),
-                  ColorMapper.toFlutterColor(currentWishlist.color)
-                      .withValues(alpha: 0.8),
+          ? Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    ColorMapper.toFlutterColor(currentWishlist.color),
+                    ColorMapper.toFlutterColor(currentWishlist.color)
+                        .withValues(alpha: 0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorMapper.toFlutterColor(currentWishlist.color)
+                        .withValues(alpha: 0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
                 ],
+              ),
+              child: FloatingActionButton(
+                onPressed: () =>
+                    _showNewWishDialog(context, ref, currentWishlist!),
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                child: const Icon(Icons.auto_awesome, size: 24),
               ),
             )
           : null,
