@@ -28,40 +28,35 @@ class _TabsPageState extends ConsumerState<TabsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundWhite,
+      backgroundColor: Colors.transparent,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.backgroundWhite,
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primaryBlack.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
+        decoration: const BoxDecoration(
+          color: AppTheme.primaryYellow,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppTheme.radiusLg),
+          ),
         ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spacing24,
-              vertical: AppTheme.spacing8,
+              vertical: AppTheme.spacing16,
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildNavItem(
-                  icon: Icons.home_rounded,
-                  label: 'Home',
+                  icon: Icons.home_outlined,
                   index: 0,
                   isSelected: _currentIndex == 0,
                 ),
+                _buildAddButton(),
                 _buildNavItem(
                   icon: Icons.person_rounded,
-                  label: 'Profile',
                   index: 1,
                   isSelected: _currentIndex == 1,
                 ),
@@ -75,7 +70,6 @@ class _TabsPageState extends ConsumerState<TabsPage> {
 
   Widget _buildNavItem({
     required IconData icon,
-    required String label,
     required int index,
     required bool isSelected,
   }) {
@@ -86,40 +80,34 @@ class _TabsPageState extends ConsumerState<TabsPage> {
         });
       },
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppTheme.spacing20,
-          vertical: AppTheme.spacing12,
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spacing12),
+        child: Icon(
+          icon,
+          color: AppTheme.primaryBlack,
+          size: 28,
         ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryYellow.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppTheme.radius16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color:
-                  isSelected ? AppTheme.primaryBlack : AppTheme.secondaryGray,
-              size: 24,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: AppTheme.spacing8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryBlack,
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
-          ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return GestureDetector(
+      onTap: () {
+        // TODO: Navigate to add wishlist/item page
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Add functionality coming soon!'),
+            backgroundColor: AppTheme.primaryBlack,
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spacing12),
+        child: const Icon(
+          Icons.add,
+          color: AppTheme.primaryBlack,
+          size: 28,
         ),
       ),
     );

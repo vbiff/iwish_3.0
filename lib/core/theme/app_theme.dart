@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Design tokens - Exact Figma design system
-  static const _primaryYellow = Color(0xFFFFD700); // Main yellow from Figma
-  static const _secondaryYellow = Color(0xFFFFC107); // Secondary yellow
-  static const _accentYellow = Color(0xFFFFF176); // Light yellow for highlights
-  static const _primaryBlack = Color(0xFF000000); // Primary black text
-  static const _secondaryGray = Color(0xFF757575); // Secondary gray text
-  static const _lightGray = Color(0xFFBDBDBD); // Light gray for borders
-  static const _backgroundWhite = Color(0xFFFFFFFF); // Pure white background
-  static const _cardWhite = Color(0xFFFAFAFA); // Card background
+  static const _primaryYellow =
+      Color(0xFFD8DF20); // Bright lime yellow from Figma
+  static const _secondaryYellow = Color(0xFFD8DF20); // Secondary yellow
+  static const _accentYellow = Color(0xFFD8DF20); // Light yellow for highlights
+  static const _primaryBlack = Color(0xFF1A1A1A); // Primary black text
+  static const _secondaryGray = Color(0xFF666666); // Secondary gray text
+  static const _lightGray = Color(0xFFE0E0E0); // Light gray for borders
+  static const _backgroundWhite =
+      Color(0xFFFAFAFA); // Slightly off-white background
+  static const _cardWhite = Color(0xFFFFFFFF); // Pure white for cards
   static const _errorColor = Color(0xFFE53E3E);
 
-  // Typography from Figma - Using system fonts for now
-  static const String _fallbackFont = 'Roboto'; // Android fallback
+  // Typography from Figma - Using system fonts
+  static const String _fallbackFont = 'SF Pro Display'; // iOS system font
 
-  // Spacing system (8px base)
+  // Spacing system (8px base) - matching Figma design
   static const double spacing4 = 4.0;
   static const double spacing8 = 8.0;
   static const double spacing12 = 12.0;
@@ -37,7 +39,7 @@ class AppTheme {
   static const double spacing3xl = 24.0;
   static const double spacing4xl = 32.0;
 
-  // Border radius system
+  // Border radius system - matching Figma design
   static const double radius4 = 4.0;
   static const double radius8 = 8.0;
   static const double radius12 = 12.0;
@@ -45,11 +47,11 @@ class AppTheme {
   static const double radius20 = 20.0;
   static const double radius24 = 24.0;
   static const double radiusFull = 999.0;
-  static const double radiusLg = 18.0;
+  static const double radiusLg = 20.0; // Figma uses larger radius
 
   // Additional radius values referenced in the codebase
-  static const double radiusSm = 6.0;
-  static const double radiusMd = 10.0;
+  static const double radiusSm = 8.0;
+  static const double radiusMd = 12.0;
   static const double radiusXl = 28.0;
   static const double radius2xl = 36.0;
 
@@ -64,7 +66,7 @@ class AppTheme {
   static const double elevationSm = 1.0;
   static const double elevationMd = 6.0;
 
-  // Additional properties
+  // Additional properties matching Figma design
   static const Gradient primaryGradient = LinearGradient(
     colors: [_primaryYellow, _secondaryYellow],
     begin: Alignment.topLeft,
@@ -73,9 +75,9 @@ class AppTheme {
 
   static List<BoxShadow> get cardShadow => [
         const BoxShadow(
-          color: Color.fromRGBO(0, 0, 0, 0.06),
-          blurRadius: 8,
-          offset: Offset(0, 2),
+          color: Color.fromRGBO(0, 0, 0, 0.08),
+          blurRadius: 12,
+          offset: Offset(0, 4),
         ),
       ];
 
@@ -103,19 +105,19 @@ class AppTheme {
       colorScheme: colorScheme,
       fontFamily: _fallbackFont,
 
-      // App Bar Theme - Clean minimal header
+      // App Bar Theme - Figma style header
       appBarTheme: const AppBarTheme(
         elevation: elevation0,
         centerTitle: false,
-        backgroundColor: _backgroundWhite,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         foregroundColor: _primaryBlack,
         titleTextStyle: TextStyle(
           fontFamily: _fallbackFont,
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
           color: _primaryBlack,
-          letterSpacing: -0.4,
+          letterSpacing: -0.5,
         ),
         iconTheme: IconThemeData(
           color: _primaryBlack,
@@ -123,19 +125,19 @@ class AppTheme {
         ),
       ),
 
-      // Card Theme - Clean cards with proper elevation
+      // Card Theme - Figma style cards with proper shadows
       cardTheme: CardTheme(
-        elevation: elevation2,
+        elevation: elevation0, // Custom shadow instead
         color: _cardWhite,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius16),
+          borderRadius: BorderRadius.circular(radiusLg),
         ),
-        shadowColor: _primaryBlack.withValues(alpha: 0.06),
+        shadowColor: Colors.transparent,
         margin: EdgeInsets.zero,
       ),
 
-      // Elevated Button Theme - Yellow buttons from Figma
+      // Elevated Button Theme - Figma yellow buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: elevation0,
@@ -144,11 +146,11 @@ class AppTheme {
           disabledBackgroundColor: _lightGray,
           disabledForegroundColor: _secondaryGray,
           padding: const EdgeInsets.symmetric(
-            horizontal: spacing32,
+            horizontal: spacing24,
             vertical: spacing16,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius12),
+            borderRadius: BorderRadius.circular(radiusLg),
           ),
           textStyle: const TextStyle(
             fontFamily: _fallbackFont,
@@ -164,30 +166,8 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: _primaryBlack,
           padding: const EdgeInsets.symmetric(
-            horizontal: spacing24,
+            horizontal: spacing20,
             vertical: spacing12,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius8),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: _fallbackFont,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.2,
-          ),
-        ),
-      ),
-
-      // Outlined Button Theme
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: _primaryBlack,
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: _lightGray, width: 1),
-          padding: const EdgeInsets.symmetric(
-            horizontal: spacing24,
-            vertical: spacing16,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius12),
@@ -201,28 +181,28 @@ class AppTheme {
         ),
       ),
 
-      // Input Decoration Theme - Clean minimal inputs
+      // Input Decoration Theme - Figma style inputs
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _cardWhite,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius12),
-          borderSide: const BorderSide(color: _lightGray, width: 1),
+          borderRadius: BorderRadius.circular(radius16),
+          borderSide: BorderSide(color: _lightGray, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius12),
-          borderSide: const BorderSide(color: _lightGray, width: 1),
+          borderRadius: BorderRadius.circular(radius16),
+          borderSide: BorderSide(color: _lightGray, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius12),
-          borderSide: const BorderSide(color: _primaryYellow, width: 2),
+          borderRadius: BorderRadius.circular(radius16),
+          borderSide: BorderSide(color: _primaryYellow, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius12),
-          borderSide: const BorderSide(color: _errorColor, width: 1),
+          borderRadius: BorderRadius.circular(radius16),
+          borderSide: BorderSide(color: _errorColor, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: spacing16,
+          horizontal: spacing20,
           vertical: spacing16,
         ),
         hintStyle: const TextStyle(
@@ -231,27 +211,13 @@ class AppTheme {
           fontSize: 16,
           fontWeight: FontWeight.w400,
         ),
-        labelStyle: const TextStyle(
-          fontFamily: _fallbackFont,
-          color: _secondaryGray,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-        ),
       ),
 
-      // Floating Action Button Theme - Yellow FAB
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        elevation: elevation4,
-        backgroundColor: _primaryYellow,
-        foregroundColor: _primaryBlack,
-        shape: CircleBorder(),
-      ),
-
-      // Bottom Navigation Bar Theme
+      // Bottom Navigation Bar Theme - Figma style
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        elevation: elevation8,
-        backgroundColor: _backgroundWhite,
-        selectedItemColor: _primaryYellow,
+        elevation: elevation0,
+        backgroundColor: _primaryYellow,
+        selectedItemColor: _primaryBlack,
         unselectedItemColor: _secondaryGray,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: TextStyle(
@@ -266,48 +232,18 @@ class AppTheme {
         ),
       ),
 
-      // Snack Bar Theme
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: _primaryBlack,
-        contentTextStyle: const TextStyle(
-          fontFamily: _fallbackFont,
-          color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius12),
-        ),
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogTheme(
-        elevation: elevation16,
-        backgroundColor: _backgroundWhite,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius20),
-        ),
-        titleTextStyle: const TextStyle(
-          fontFamily: _fallbackFont,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: _primaryBlack,
-          letterSpacing: -0.4,
-        ),
-        contentTextStyle: const TextStyle(
-          fontFamily: _fallbackFont,
-          fontSize: 16,
-          color: _secondaryGray,
-          letterSpacing: -0.2,
-        ),
-      ),
-
       // Typography - Matching Figma design system
       textTheme: const TextTheme(
         // Large Display Text
         displayLarge: TextStyle(
+          fontFamily: _fallbackFont,
+          fontSize: 36,
+          fontWeight: FontWeight.w800,
+          color: _primaryBlack,
+          height: 1.1,
+          letterSpacing: -1.0,
+        ),
+        displayMedium: TextStyle(
           fontFamily: _fallbackFont,
           fontSize: 32,
           fontWeight: FontWeight.w700,
@@ -315,7 +251,7 @@ class AppTheme {
           height: 1.2,
           letterSpacing: -0.8,
         ),
-        displayMedium: TextStyle(
+        displaySmall: TextStyle(
           fontFamily: _fallbackFont,
           fontSize: 28,
           fontWeight: FontWeight.w700,
@@ -323,20 +259,12 @@ class AppTheme {
           height: 1.2,
           letterSpacing: -0.6,
         ),
-        displaySmall: TextStyle(
-          fontFamily: _fallbackFont,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          color: _primaryBlack,
-          height: 1.3,
-          letterSpacing: -0.4,
-        ),
 
         // Headlines
         headlineLarge: TextStyle(
           fontFamily: _fallbackFont,
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
           color: _primaryBlack,
           height: 1.3,
           letterSpacing: -0.4,

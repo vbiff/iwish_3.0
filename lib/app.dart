@@ -52,15 +52,25 @@ class _MyAppState extends ConsumerState<MyApp> {
 
       // Performance Optimizations
       builder: (context, child) {
-        return MediaQuery(
-          // Prevent font scaling beyond reasonable limits
-          data: MediaQuery.of(context).copyWith(
-            textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 0.8,
-                  maxScaleFactor: 1.3,
-                ),
+        return Container(
+          decoration: const BoxDecoration(
+            // Option 2: Image background (uncomment to use)
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.png'),
+              fit: BoxFit.cover,
+              // Adjust opacity to keep content readable
+            ),
           ),
-          child: child!,
+          child: MediaQuery(
+            // Prevent font scaling beyond reasonable limits
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.of(context).textScaler.clamp(
+                    minScaleFactor: 0.8,
+                    maxScaleFactor: 1.3,
+                  ),
+            ),
+            child: child!,
+          ),
         );
       },
 

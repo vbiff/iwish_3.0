@@ -144,8 +144,3 @@ class ProfileNotifier extends StateNotifier<UserProfile> {
     return '';
   }
 }
-
-// Placeholder provider - will be properly defined in app_providers.dart
-final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  throw UnimplementedError('This should be implemented in app_providers.dart');
-});

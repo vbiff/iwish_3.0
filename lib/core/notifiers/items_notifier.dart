@@ -4,6 +4,7 @@ import '../../domain/core/result.dart';
 import '../../domain/models/wishlist_item.dart';
 import '../../domain/repository/wish_item/wish_item_repository.dart';
 import '../utils/logger.dart';
+import '../providers/app_providers.dart';
 
 /// AsyncNotifier for managing wishlist items
 /// Follows Single Responsibility Principle - only manages item operations
@@ -209,8 +210,3 @@ class ItemsNotifier extends AsyncNotifier<List<WishlistItem>> {
     }
   }
 }
-
-// Placeholder provider - will be properly defined in app_providers.dart
-final wishItemRepositoryProvider = Provider<WishItemRepository>((ref) {
-  throw UnimplementedError('This should be implemented in app_providers.dart');
-});

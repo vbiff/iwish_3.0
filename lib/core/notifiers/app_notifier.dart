@@ -8,6 +8,7 @@ import '../../domain/models/wishlists.dart';
 import '../../domain/repository/wish_item/wish_item_repository.dart';
 import '../../domain/repository/wishlist_repository/wishlist_repository.dart';
 import '../utils/logger.dart';
+import '../providers/app_providers.dart';
 
 /// Main application notifier that manages the overall app state
 /// Follows Single Responsibility Principle by only managing app-wide state
@@ -132,13 +133,3 @@ class AppNotifier extends Notifier<AppState> {
     state = state.setLoading(isLoading);
   }
 }
-
-// Provider imports - these need to be imported from the actual provider files
-// We'll import these in the app_providers.dart file
-final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
-  throw UnimplementedError('This should be implemented in app_providers.dart');
-});
-
-final wishItemRepositoryProvider = Provider<WishItemRepository>((ref) {
-  throw UnimplementedError('This should be implemented in app_providers.dart');
-});

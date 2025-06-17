@@ -1,304 +1,330 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:auto_route/auto_route.dart';
-
-import '../../core/navigation/app_router.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/async_value_widget.dart';
-import '../../core/widgets/figma_card.dart';
-import '../../core/widgets/figma_button.dart';
-import '../../core/utils/color_mapper.dart';
-import '../../domain/models/wishlist_item.dart';
 import '../../domain/models/wishlists.dart';
-import 'items/items_provider.dart';
-import 'wishlist_provider/wishlist_provider.dart';
+import '../../core/providers/app_providers.dart';
+import '../../core/widgets/figma_wishlist_card.dart';
+import '../wishlist/wishlist_page.dart';
+import 'widget/new_wishlist_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final itemsAsync = ref.watch(itemsProvider);
-    final wishlistsAsync = ref.watch(wishlistsProvider);
+    final wishlistsAsync = ref.watch(wishlistsNotifierProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundWhite,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(itemsProvider);
-            ref.invalidate(wishlistsProvider);
-          },
-          color: AppTheme.primaryYellow,
-          backgroundColor: AppTheme.backgroundWhite,
-          child: AsyncValueWidget(
-            value: itemsAsync,
-            data: (items) => CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                // Header Section
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppTheme.spacing24,
-                      AppTheme.spacing32,
-                      AppTheme.spacing24,
-                      0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Main Title
-                        const Text(
-                          'My Wishes',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.primaryBlack,
-                            letterSpacing: -0.8,
-                          ),
-                        ),
-                        const SizedBox(height: AppTheme.spacing8),
-
-                        // Subtitle
-                        const Text(
-                          'Track your dreams and make them come true',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: AppTheme.secondaryGray,
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-
-                        const SizedBox(height: AppTheme.spacing32),
-
-                        // Quick Stats Section
-                        AsyncValueWidget(
-                          value: wishlistsAsync,
-                          data: (wishlists) => Row(
-                            children: [
-                              Expanded(
-                                child: FigmaStatsCard(
-                                  title: 'Total Wishes',
-                                  value: '${items.length}',
-                                  icon: Icons.favorite_rounded,
-                                ),
-                              ),
-                              const SizedBox(width: AppTheme.spacing16),
-                              Expanded(
-                                child: FigmaStatsCard(
-                                  title: 'Wishlists',
-                                  value: '${wishlists.length}',
-                                  icon: Icons.folder_rounded,
-                                ),
-                              ),
-                            ],
-                          ),
-                          loading: () => Row(
-                            children: [
-                              Expanded(
-                                child: FigmaStatsCard(
-                                  title: 'Total Wishes',
-                                  value: '${items.length}',
-                                  icon: Icons.favorite_rounded,
-                                ),
-                              ),
-                              const SizedBox(width: AppTheme.spacing16),
-                              const Expanded(
-                                child: FigmaStatsCard(
-                                  title: 'Wishlists',
-                                  value: '...',
-                                  icon: Icons.folder_rounded,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppTheme.spacing48),
-                ),
-
-                // Wishlists Section
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Your Wishlists',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryBlack,
-                            letterSpacing: -0.4,
-                          ),
-                        ),
-                        FigmaButton(
-                          text: 'View All',
-                          variant: FigmaButtonVariant.ghost,
-                          size: FigmaButtonSize.small,
-                          onPressed: () {
-                            // Navigate to all wishlists
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppTheme.spacing20),
-                ),
-
-                // Wishlists Grid
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacing24),
-                  sliver: AsyncValueWidget(
-                    value: wishlistsAsync,
-                    data: (wishlists) =>
-                        _buildWishlistGrid(context, ref, items, wishlists),
-                    loading: () => _buildLoadingGrid(),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppTheme.spacing48),
-                ),
-              ],
-            ),
+    return DefaultTabController(
+      initialIndex: 0,
+      length: (wishlistsAsync.valueOrNull?.length ?? 0) + 1,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Image.asset(
+            'assets/images/iwish.png',
+            width: 100,
+            height: 100,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWishlistGrid(BuildContext context, WidgetRef ref,
-      List<WishlistItem> items, List<Wishlist> wishlists) {
-    final List<Widget> gridItems = [
-      // All Wishes Card
-      FigmaWishCard(
-        title: 'All Items',
-        count: items.length,
-        color: AppTheme.primaryYellow,
-        onTap: () {
-          context.router.push(
-            WishlistRouteRoute(
-              wishlist: items,
-              title: 'All my wishes',
+          actions: [
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'I wish',
+                style: TextStyle(
+                  color: AppTheme.primaryYellow,
+                ),
+              ),
             ),
-          );
-        },
-      ),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'Events',
+                style: TextStyle(
+                  color: AppTheme.secondaryGray,
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppTheme.spacing24),
+            // Wishlists tabs
+            wishlistsAsync.when(
+              data: (wishlists) {
+                if (wishlists.isEmpty) {
+                  return const EmptyState();
+                }
 
-      // Individual Wishlists
-      ...wishlists.take(5).map((wishlist) {
-        final wishlistItems =
-            items.where((item) => item.wishlistId == wishlist.id).length;
-        return FigmaWishCard(
-          title: wishlist.title,
-          count: wishlistItems,
-          color: ColorMapper.toFlutterColor(wishlist.color),
-          onTap: () {
-            context.router.push(WishlistRouteRoute(
-              wishlistObject: wishlist,
-              wishlist: items
-                  .where((item) => item.wishlistId == wishlist.id)
-                  .toList(),
-            ));
-          },
-        );
-      }),
+                // Update tab controller length when wishlists change
 
-      // Add New Wishlist Card
-      FigmaAddCard(
-        title: 'New Wishlist',
-        subtitle: 'Create a new collection',
-        onTap: () => context.router.push(NewWishlistRouteRoute()),
-      ),
-    ];
+                return Expanded(
+                  child: Column(
+                    children: [
+                      // Tab bar
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacing16,
+                        ),
+                        child: TabBar(
+                            isScrollable: true,
+                            tabAlignment: TabAlignment.start,
+                            indicator: BoxDecoration(
+                              color: AppTheme.primaryYellow,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radius12),
+                            ),
+                            labelColor: AppTheme.primaryBlack,
+                            unselectedLabelColor: AppTheme.secondaryGray,
+                            labelStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                            unselectedLabelStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            dividerColor: Colors.transparent,
+                            labelPadding: EdgeInsets.zero,
+                            onTap: (index) {},
+                            tabs: [
+                              Tab(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacing8,
+                                    vertical: AppTheme.spacing8,
+                                  ),
+                                  child: Text('All'),
+                                ),
+                              ),
+                              ...wishlists.map((wishlist) {
+                                return Tab(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.spacing8,
+                                      vertical: AppTheme.spacing8,
+                                    ),
+                                    child: Text(wishlist.title),
+                                  ),
+                                );
+                              }),
+                            ]),
+                      ),
 
-    return SliverGrid(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.1,
-        crossAxisSpacing: AppTheme.spacing16,
-        mainAxisSpacing: AppTheme.spacing16,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => gridItems[index],
-        childCount: gridItems.length,
-      ),
-    );
-  }
-
-  Widget _buildLoadingGrid() {
-    return SliverGrid(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.1,
-        crossAxisSpacing: AppTheme.spacing16,
-        mainAxisSpacing: AppTheme.spacing16,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => const _LoadingCard(),
-        childCount: 6,
+                      const SizedBox(height: AppTheme.spacing64),
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacing16,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'I wish',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: AppTheme.primaryBlack,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppTheme.primaryYellow),
+                ),
+              ),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 64,
+                      color: AppTheme.secondaryGray,
+                    ),
+                    const SizedBox(height: AppTheme.spacing16),
+                    Text(
+                      'Failed to load wishlists',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: AppTheme.spacing8),
+                    Text(
+                      error.toString(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.secondaryGray,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _LoadingCard extends StatelessWidget {
-  const _LoadingCard();
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FigmaCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Loading color indicator
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.lightGray,
-              borderRadius: BorderRadius.circular(AppTheme.radius12),
+    return Expanded(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing32),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryYellow.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radius2xl),
+              ),
+              child: const Icon(
+                Icons.favorite_rounded,
+                size: 64,
+                color: AppTheme.primaryYellow,
+              ),
             ),
-          ),
-
-          const Spacer(),
-
-          // Loading title
-          Container(
-            width: double.infinity,
-            height: 16,
-            decoration: BoxDecoration(
-              color: AppTheme.lightGray,
-              borderRadius: BorderRadius.circular(AppTheme.radius4),
+            const SizedBox(height: AppTheme.spacing24),
+            Text(
+              'No Wishlists Yet',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
-          ),
-
-          const SizedBox(height: AppTheme.spacing8),
-
-          // Loading count
-          Container(
-            width: 60,
-            height: 12,
-            decoration: BoxDecoration(
-              color: AppTheme.lightGray,
-              borderRadius: BorderRadius.circular(AppTheme.radius4),
+            const SizedBox(height: AppTheme.spacing12),
+            Text(
+              'Create your first wishlist to get started',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.secondaryGray,
+                  ),
+              textAlign: TextAlign.center,
             ),
+            const SizedBox(height: AppTheme.spacing32),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NewWishlistPage(),
+                ),
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Create Wishlist'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing32,
+                  vertical: AppTheme.spacing16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WishListItems extends StatelessWidget {
+  const WishListItems({
+    super.key,
+    required this.wishlist,
+    required this.itemsAsync,
+  });
+
+  final Wishlist wishlist;
+  final AsyncValue itemsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return itemsAsync.when(
+      data: (allItems) {
+        final items =
+            allItems.where((item) => item.wishlistId == wishlist.id).toList();
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+          child: GridView.builder(
+            padding: const EdgeInsets.only(bottom: AppTheme.spacing32),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.8,
+              crossAxisSpacing: AppTheme.spacing16,
+              mainAxisSpacing: AppTheme.spacing16,
+            ),
+            itemCount: items.length + 1, // +1 for add button
+            itemBuilder: (context, index) {
+              if (index == items.length) {
+                // Add item card
+                return FigmaAddItemCard(
+                  onTap: () => // TODO: Navigate to add item page
+                      ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Add item to ${wishlist.title}'),
+                      backgroundColor: AppTheme.primaryBlack,
+                    ),
+                  ),
+                );
+              }
+
+              final item = items[index];
+              return FigmaWishItemCard(
+                title: item.title,
+                imageUrl: item.imageUrl,
+                price: item.price,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WishlistPage(
+                      wishlistObject:
+                          null, // Will be determined by item's wishlist
+                      wishlist: const [], // Empty list for now
+                    ),
+                  ),
+                ),
+                onEdit: () => // TODO: Navigate to edit item page
+                    ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Edit ${item.title}'),
+                    backgroundColor: AppTheme.primaryBlack,
+                  ),
+                ),
+              );
+            },
           ),
-        ],
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryYellow),
+        ),
+      ),
+      error: (error, stack) => Center(
+        child: Text(
+          'Failed to load items: $error',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.secondaryGray,
+              ),
+        ),
       ),
     );
   }

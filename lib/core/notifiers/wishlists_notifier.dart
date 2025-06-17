@@ -4,6 +4,7 @@ import '../../domain/core/result.dart';
 import '../../domain/models/wishlists.dart';
 import '../../domain/repository/wishlist_repository/wishlist_repository.dart';
 import '../utils/logger.dart';
+import '../providers/app_providers.dart';
 
 /// AsyncNotifier for managing wishlists
 /// Follows Single Responsibility Principle - only manages wishlist operations
@@ -131,8 +132,3 @@ class WishlistsNotifier extends AsyncNotifier<List<Wishlist>> {
     return state.value?.where((w) => w.userId == userId).toList() ?? [];
   }
 }
-
-// Placeholder provider - will be properly defined in app_providers.dart
-final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
-  throw UnimplementedError('This should be implemented in app_providers.dart');
-});
